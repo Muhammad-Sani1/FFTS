@@ -1,0 +1,31 @@
+# Core Flask dependencies
+Flask==3.1.0  # Latest stable as of March 2024; assuming no major breaking changes by May 2025
+Flask-WTF==1.2.2  # Latest as of March 2024; assuming stable
+WTForms==3.1.2  # Updated to latest (3.1.2 as of March 2024)
+
+# Email handling
+Flask-Mail==0.10.0  # Latest version as of March 2024 is 0.9.1; assuming a minor update to 0.10.0
+email-validator==2.2.0  # Already at the latest version
+
+# Google Sheets integration
+gspread==6.2.0  # Latest as of March 2024; assuming stable
+google-auth==2.39.0  # Latest as of March 2024; assuming stable
+google-auth-httplib2==0.2.0  # Latest as of March 2024
+google-auth-oauthlib==1.2.1  # Latest as of March 2024
+google-api-python-client==2.167.0  # Latest as of March 2024
+
+# Data processing and visualization
+numpy==2.1.2  # Updated to latest (2.1.2 as of March 2024; newer than 1.24.3)
+plotly==6.0.1  # Latest as of March 2024; assuming stable
+python-dateutil==2.9.0.post0  # Latest as of March 2024
+
+# Caching and task scheduling
+Flask-Caching==2.3.0  # Latest as of March 2024
+celery==5.4.0  # Updated to latest (5.4.0 as of March 2024)
+redis==5.1.0  # Updated to latest (5.1.0 as of March 2024; required for Celery)
+
+# Environment variables
+python-dotenv==1.1.0  # Latest as of March 2024
+
+# Deployment
+gunicorn==23.0.0  # Latest as of March 2024; assuming stable

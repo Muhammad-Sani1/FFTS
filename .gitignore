@@ -1,0 +1,59 @@
+# Environment files
+.env
+*.env  # Replaces "All files.env" for clarity; covers .env.prod, .env.test, etc.
+
+# Google Sheets API credentials
+token.json
+client_secret.json
+credentials.json  # Added for any additional Google API credential files
+
+# Python and Flask
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+venv/  # Added for virtual environments
+.env/  # Added for virtual environment configs
+*.sublime-workspace  # Added for Sublime Text project files
+
+# Static and generated files
+*.csv
+*.log  # Added for application logs (e.g., from logging in app.py)
+*.cache  # Added for Flask-Caching artifacts
+/static/cache/  # Added for potential static file caches
+/static/uploads/  # Added for potential user-uploaded files
+
+# Test-related files
+tests/.pytest_cache/  # Added for pytest cache
+tests/coverage/  # Added for test coverage reports
+tests/htmlcov/  # Added for HTML coverage reports
+.coverage  # Added for coverage data
+*.xml  # Added for test result XML files
+
+# Jupyter Notebook files (optional, keep if relevant)
+.ipynb_checkpoints/
+*.ipynb
+.ipython/
+.jupyter/
+.python_history
+
+# System and user directories (simplified)
+Desktop/
+Documents/
+Downloads/
+Music/
+Pictures/
+Videos/
+*.bak  # Added for backup files
+*.tmp  # Added for temporary files
+*.swp  # Added for Vim swap files
+
+# Deployment artifacts
+*.pid  # Added for process ID files
+gunicorn.log  # Added for Gunicorn logs (if using for Render)
+*.sock  # Added for Unix socket files
+Procfile  # Optional: exclude if dynamically generated for Render
