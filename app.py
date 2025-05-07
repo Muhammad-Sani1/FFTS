@@ -2001,22 +2001,20 @@ def expense_tracker_form():
             'language': form.language.data
         }
         store_authentication_data(auth_data)
-        
-        
-user_data = {
-    'ID': form.record_id.data or str(uuid.uuid4()),
-    'UserEmail': form.email.data,
-    'Amount': parse_number(form.amount.data),
-    'Category': form.category.data,
-    'Date': datetime.now().strftime('%Y-%m-%d'),
-    'Description': form.description.data,
-    'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    'TransactionType': form.transaction_type.data,
-    'RunningBalance': 0,
-    'FirstName': form.first_name.data,
-    'Email': form.email.data,
-    'Language': form.language.data
-}
+        user_data = {
+            'ID': form.record_id.data or str(uuid.uuid4()),
+            'UserEmail': form.email.data,
+            'Amount': parse_number(form.amount.data),
+            'Category': form.category.data,
+            'Date': datetime.now().strftime('%Y-%m-%d'),
+            'Description': form.description.data,
+            'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'TransactionType': form.transaction_type.data,
+            'RunningBalance': 0,
+            'FirstName': form.first_name.data,
+            'Email': form.email.data,
+            'Language': form.language.data
+        }
         
         try:
             update_or_append_user_data(user_data, 'ExpenseTracker')
@@ -2074,7 +2072,7 @@ user_data = {
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
+    
 @app.route('/expense_tracker_dashboard')
 def expense_tracker_dashboard():
     language = session.get('language', 'English')
