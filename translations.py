@@ -612,6 +612,7 @@ translations = {
         'email.aria-label': 'Your email address',
         'email.data-tooltip': 'Your email, like example@gmail.com, to get your score.',
         'confirm_email.label': 'Confirm Email',
+        'Confirm Email'': 'Confirm Email',
         'confirm_email.placeholder': 'Re-enter your email',
         'confirm_email.aria-label': 'Confirm your email address',
         'confirm_email.data-tooltip': 'Type your email again to make sure it’s correct.',
