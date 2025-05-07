@@ -74,6 +74,17 @@ celery.conf.beat_schedule = {
     },
 }
 
+# Move calculate_quiz_results to module level
+def calculate_quiz_results(q1, q2, q3, q4, q5, language='English'):
+    score = sum(1 for q in [q1, q2, q3, q4, q5] if q == 'Yes')
+    if score >= 4:
+        personality = get_translation('Strategist', language)
+    elif score >= 2:
+        personality = get_translation('Planner', language)
+    else:
+        personality = get_translation('Learner', language)
+    return score, personality
+
 # Configure Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -1409,6 +1420,7 @@ def net_worth_dashboard():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
+
 @app.route('/quiz_form', methods=['GET', 'POST'])
 def quiz_form():
     language = session.get('language', 'English')
@@ -1462,6 +1474,7 @@ def quiz_form():
         }
         store_authentication_data(auth_data)
         
+        # Call the module-level calculate_quiz_results function
         quiz_score, personality = calculate_quiz_results(
             form.q1.data, form.q2.data, form.q3.data, form.q4.data, form.q5.data, form.language.data
         )
@@ -1479,16 +1492,6 @@ def quiz_form():
             'QuizScore': quiz_score,
             'Personality': personality
         }
-
-        def calculate_quiz_results(q1, q2, q3, q4, q5, language='English'):
-    score = sum(1 for q in [q1, q2, q3, q4, q5] if q == 'Yes')
-    if score >= 4:
-        personality = get_translation('Strategist', language)
-    elif score >= 2:
-        personality = get_translation('Planner', language)
-    else:
-        personality = get_translation('Learner', language)
-    return score, personality
         
         try:
             update_or_append_user_data(user_data, 'Quiz')
@@ -1536,6 +1539,7 @@ def quiz_form():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
+    
 @app.route('/quiz_dashboard')
 def quiz_dashboard():
     language = session.get('language', 'English')
