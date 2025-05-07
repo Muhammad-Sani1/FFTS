@@ -2076,7 +2076,7 @@ def expense_tracker_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-    @app.route('/bill_planner_form', methods=['GET', 'POST'])
+@app.route('/bill_planner_form', methods=['GET', 'POST'])
 def bill_planner_form():
     language = session.get('language', 'English')
     email = session.get('user_email')
