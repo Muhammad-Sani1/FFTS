@@ -18,6 +18,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
 from flask_caching import Cache
+from flask_session import Session  # Import Flask-Session
 from celery import Celery
 from celery.schedules import crontab
 import redis
