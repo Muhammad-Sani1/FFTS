@@ -1199,6 +1199,10 @@ translations = {
         'Valid percentage!': 'Valid percentage!',
         'Emails match!': 'Emails match!',
         'User type selected!': 'User type selected!',
-        'Business name required': 'Business name required.'
+        'Business name required': 'Business name required.',
+        'Failed to store authentication data': 'Failed to store authentication data.',
+        'Financial Stability Achieved!': 'Financial Stability Achieved!',
+        'First Health Score Completed!': 'First Health Score Completed!',
+        'Error saving data. Please try again.': 'Error saving data. Please try again.'        
     }
 }
