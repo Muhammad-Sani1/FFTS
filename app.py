@@ -128,7 +128,7 @@ WORKSHEETS = {
     },
     'HealthScore': {
         'name': 'HealthScoreSheet',
-        'headers': ['Timestamp', 'business_name', 'income_revenue', 'expenses_costs', 'debt_loan', 'debt_interest_rate', 'AutoEmail', 'phone_number', 'FirstName', 'last_name', 'user_type', 'Email', 'Badges', 'Language', 'Score']
+        'headers': ['Timestamp', 'business_name', 'income_revenue', 'expenses_costs', 'debt_loan', 'debt_interest_rate', 'AutoEmail', 'phone_number', 'first_name', 'last_name', 'user_type', 'Email', 'Badges', 'Language', 'Score']
     },
     'NetWorth': {
         'name': 'NetWorthSheet',
