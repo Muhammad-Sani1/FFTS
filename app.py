@@ -54,6 +54,12 @@ app.config['WTF_CSRF_ENABLED'] = True
 app.config['SESSION_USE_SIGNER'] = True  # Sign session cookies
 Session(app)  # Initialize Flask-Session
 
+# Middleware to log session size
+@app.before_request
+def log_session_size():
+    session_size = len(str(session).encode('utf-8'))
+    logger.debug(f"Session size: {session_size} bytes")
+    
 # Configure Flask-Caching
 cache_config = {
     "CACHE_TYPE": "SimpleCache",
@@ -1390,15 +1396,20 @@ def net_worth_form():
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
+            form.confirm_email.data = user_email
+            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'NetWorth')
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
+                form.last_name.data = record['LastName']
+                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
                 form.assets.data = record['Assets']
                 form.liabilities.data = record['Liabilities']
+                form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
     if form.validate_on_submit():
@@ -1413,12 +1424,13 @@ def net_worth_form():
         
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
+            'last_name': form.last_name.data or '',
+            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
@@ -1426,18 +1438,18 @@ def net_worth_form():
         assets = parse_number(form.assets.data)
         liabilities = parse_number(form.liabilities.data)
         net_worth = assets - liabilities
-        rank_percentile = assign_net_worth_rank(net_worth)
-        badges = assign_net_worth_badges(net_worth, form.language.data)
-        advice = get_net_worth_advice(net_worth, form.language.data)
         
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'FirstName': form.first_name.data,
-            'Email': form.email.data,
-            'Language': form.language.data,
             'Assets': assets,
             'Liabilities': liabilities,
-            'NetWorth': net_worth
+            'NetWorth': net_worth,
+            'AutoEmail': str(form.auto_email.data),
+            'PhoneNumber': form.phone_number.data or '',
+            'FirstName': form.first_name.data,
+            'LastName': form.last_name.data or '',
+            'Email': form.email.data,
+            'Language': form.language.data
         }
         
         try:
@@ -1457,37 +1469,20 @@ def net_worth_form():
                     'email_templates/net_worth_email.html',
                     first_name=form.first_name.data,
                     net_worth=net_worth,
-                    rank_percentile=rank_percentile,
-                    badges=badges,
-                    advice=advice,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
-                    get_translation('Your Net Worth Results', form.language.data),
+                    get_translation('Your Net Worth', form.language.data),
                     [form.email.data],
                     html,
                     form.language.data
                 )
             except Exception as e:
-                flash(get_translation('Error sending email. Your results are still saved.', form.language.data), 'warning')
+                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
-        try:
-            chart_html, comparison_chart_html = generate_net_worth_charts(
-                json.dumps(user_data),
-                form.language.data
-            )
-        except Exception as e:
-            flash(get_translation('Error generating charts. Your results are still available.', form.language.data), 'warning')
-            chart_html = comparison_chart_html = ''
-        
-        session['net_worth_data'] = {
-            'user_data': user_data,
-            'chart_html': chart_html,
-            'comparison_chart_html': comparison_chart_html,
-            'rank_percentile': rank_percentile,
-            'badges': badges,
-            'advice': advice
-        }
+        session['net_worth_timestamp'] = user_data['Timestamp']
+        session.pop('net_worth_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('net_worth_dashboard'))
     
@@ -1504,21 +1499,33 @@ def net_worth_form():
 @app.route('/net_worth_dashboard')
 def net_worth_dashboard():
     language = session.get('language', 'English')
-    data = session.get('net_worth_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('net_worth_timestamp', '')
     
-    if not data.get('user_data', {}).get('FirstName'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('net_worth_form'))
     
+    user_data = get_record_by_id(timestamp, 'NetWorth')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('net_worth_form'))
+    
+    assets = parse_number(user_data.get('Assets', 0))
+    liabilities = parse_number(user_data.get('Liabilities', 0))
+    net_worth = parse_number(user_data.get('NetWorth', 0))
+    
+    try:
+        chart_html = generate_net_worth_charts(assets, liabilities, net_worth, language)
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
+        chart_html = ''
+    
     return render_template(
         'net_worth_dashboard.html',
-        tool='Net Worth Calculator',
-        user_data=data.get('user_data', {}),
-        chart_html=data.get('chart_html', ''),
-        comparison_chart_html=data.get('comparison_chart_html', ''),
-        rank_percentile=data.get('rank_percentile', 50.0),
-        badges=data.get('badges', []),
-        advice=data.get('advice', ''),
+        tool='Net Worth',
+        user_data=user_data,
+        chart_html=chart_html,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -1527,7 +1534,6 @@ def net_worth_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/quiz_form', methods=['GET', 'POST'])
 def quiz_form():
     language = session.get('language', 'English')
@@ -1542,18 +1548,18 @@ def quiz_form():
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
+            form.confirm_email.data = user_email
+            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'Quiz')
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
+                form.last_name.data = record['LastName']
+                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
-                form.q1.data = record['Q1']
-                form.q2.data = record['Q2']
-                form.q3.data = record['Q3']
-                form.q4.data = record['Q4']
-                form.q5.data = record['Q5']
+                form.quiz_answers.data = record['QuizAnswers']
                 form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
@@ -1569,39 +1575,29 @@ def quiz_form():
         
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
+            'last_name': form.last_name.data or '',
+            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
         
-        score, personality = calculate_quiz_results(
-            form.q1.data,
-            form.q2.data,
-            form.q3.data,
-            form.q4.data,
-            form.q5.data,
-            form.language.data
-        )
-        badges = assign_quiz_badges(score, form.language.data)
-        advice = get_quiz_advice(score, personality, form.language.data)
+        quiz_score, feedback = calculate_quiz_score(form.quiz_answers.data, form.language.data)
         
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'QuizAnswers': form.quiz_answers.data,
+            'QuizScore': quiz_score,
+            'AutoEmail': str(form.auto_email.data),
+            'PhoneNumber': form.phone_number.data or '',
             'FirstName': form.first_name.data,
+            'LastName': form.last_name.data or '',
             'Email': form.email.data,
-            'Language': form.language.data,
-            'Q1': form.q1.data,
-            'Q2': form.q2.data,
-            'Q3': form.q3.data,
-            'Q4': form.q4.data,
-            'Q5': form.q5.data,
-            'QuizScore': score,
-            'Personality': personality
+            'Language': form.language.data
         }
         
         try:
@@ -1620,28 +1616,22 @@ def quiz_form():
                 html = render_template(
                     'email_templates/quiz_email.html',
                     first_name=form.first_name.data,
-                    score=score,
-                    personality=personality,
-                    advice=advice,
-                    badges=badges,
+                    quiz_score=quiz_score,
+                    feedback=feedback,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
-                    get_translation('Your Financial Personality Quiz Results', form.language.data),
+                    get_translation('Your Quiz Results', form.language.data),
                     [form.email.data],
                     html,
                     form.language.data
                 )
             except Exception as e:
-                flash(get_translation('Error sending email. Your results are still saved.', form.language.data), 'warning')
+                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
-        session['quiz_data'] = {
-            'user_data': user_data,
-            'score': score,
-            'personality': personality,
-            'badges': badges,
-            'advice': advice
-        }
+        session['quiz_timestamp'] = user_data['Timestamp']
+        session.pop('quiz_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('quiz_dashboard'))
     
@@ -1658,20 +1648,33 @@ def quiz_form():
 @app.route('/quiz_dashboard')
 def quiz_dashboard():
     language = session.get('language', 'English')
-    data = session.get('quiz_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('quiz_timestamp', '')
     
-    if not data.get('user_data', {}).get('FirstName'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('quiz_form'))
     
+    user_data = get_record_by_id(timestamp, 'Quiz')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('quiz_form'))
+    
+    quiz_score = parse_number(user_data.get('QuizScore', 0))
+    feedback = get_quiz_feedback(quiz_score, language)
+    
+    try:
+        chart_html = generate_quiz_charts(quiz_score, language)
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
+        chart_html = ''
+    
     return render_template(
         'quiz_dashboard.html',
-        tool='Financial Personality Quiz',
-        user_data=data.get('user_data', {}),
-        score=data.get('score', 0),
-        personality=data.get('personality', ''),
-        badges=data.get('badges', []),
-        advice=data.get('advice', ''),
+        tool='Financial Quiz',
+        user_data=user_data,
+        chart_html=chart_html,
+        feedback=feedback,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -1680,7 +1683,6 @@ def quiz_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/emergency_fund_form', methods=['GET', 'POST'])
 def emergency_fund_form():
     language = session.get('language', 'English')
@@ -1695,14 +1697,19 @@ def emergency_fund_form():
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
+            form.confirm_email.data = user_email
+            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'EmergencyFund')
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
+                form.last_name.data = record['LastName']
+                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
                 form.monthly_expenses.data = record['MonthlyExpenses']
+                form.savings.data = record['Savings']
                 form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
@@ -1718,26 +1725,32 @@ def emergency_fund_form():
         
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
+            'last_name': form.last_name.data or '',
+            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
         
         monthly_expenses = parse_number(form.monthly_expenses.data)
-        recommended_fund = monthly_expenses * 6
+        savings = parse_number(form.savings.data)
+        emergency_fund_months = savings / monthly_expenses if monthly_expenses > 0 else 0
         
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'FirstName': form.first_name.data,
-            'Email': form.email.data,
-            'Language': form.language.data,
             'MonthlyExpenses': monthly_expenses,
-            'RecommendedFund': recommended_fund
+            'Savings': savings,
+            'EmergencyFundMonths': emergency_fund_months,
+            'AutoEmail': str(form.auto_email.data),
+            'PhoneNumber': form.phone_number.data or '',
+            'FirstName': form.first_name.data,
+            'LastName': form.last_name.data or '',
+            'Email': form.email.data,
+            'Language': form.language.data
         }
         
         try:
@@ -1756,24 +1769,21 @@ def emergency_fund_form():
                 html = render_template(
                     'email_templates/emergency_fund_email.html',
                     first_name=form.first_name.data,
-                    monthly_expenses=monthly_expenses,
-                    recommended_fund=recommended_fund,
+                    emergency_fund_months=emergency_fund_months,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
-                    get_translation('Your Emergency Fund Recommendation', form.language.data),
+                    get_translation('Your Emergency Fund', form.language.data),
                     [form.email.data],
                     html,
                     form.language.data
                 )
             except Exception as e:
-                flash(get_translation('Error sending email. Your results are still saved.', form.language.data), 'warning')
+                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
-        session['emergency_fund_data'] = {
-            'user_data': user_data,
-            'monthly_expenses': monthly_expenses,
-            'recommended_fund': recommended_fund
-        }
+        session['emergency_fund_timestamp'] = user_data['Timestamp']
+        session.pop('emergency_fund_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('emergency_fund_dashboard'))
     
@@ -1790,18 +1800,33 @@ def emergency_fund_form():
 @app.route('/emergency_fund_dashboard')
 def emergency_fund_dashboard():
     language = session.get('language', 'English')
-    data = session.get('emergency_fund_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('emergency_fund_timestamp', '')
     
-    if not data.get('user_data', {}).get('FirstName'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('emergency_fund_form'))
     
+    user_data = get_record_by_id(timestamp, 'EmergencyFund')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('emergency_fund_form'))
+    
+    monthly_expenses = parse_number(user_data.get('MonthlyExpenses', 0))
+    savings = parse_number(user_data.get('Savings', 0))
+    emergency_fund_months = parse_number(user_data.get('EmergencyFundMonths', 0))
+    
+    try:
+        chart_html = generate_emergency_fund_charts(monthly_expenses, savings, emergency_fund_months, language)
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
+        chart_html = ''
+    
     return render_template(
         'emergency_fund_dashboard.html',
-        tool='Emergency Fund Calculator',
-        user_data=data.get('user_data', {}),
-        monthly_expenses=data.get('monthly_expenses', 0),
-        recommended_fund=data.get('recommended_fund', 0),
+        tool='Emergency Fund',
+        user_data=user_data,
+        chart_html=chart_html,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -1810,16 +1835,15 @@ def emergency_fund_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/budget_form', methods=['GET', 'POST'])
 def budget_form():
     language = session.get('language', 'English')
-    form = BudgetForm(language=language)
+    form = BudgetForm()
     
     user_email = session.get('user_email', '')
     if user_email:
         user_data = get_user_data_by_email(user_email, 'Budget')
-        form.record_id.choices = [('', get_translation('Create New Record', language))] + [(row['Timestamp'], row['Timestamp']) for row in user_data]
+        form.record_id.choices = [('', 'Create New Record')] + [(row['Timestamp'], row['Timestamp']) for row in user_data]
     
     if request.method == 'GET':
         if user_email:
@@ -1833,12 +1857,12 @@ def budget_form():
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
+                form.last_name.data = record['LastName']
+                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
-                form.income.data = record['MonthlyIncome']
-                form.housing.data = record['HousingExpenses']
-                form.food.data = record['FoodExpenses']
-                form.transport.data = record['TransportExpenses']
-                form.other.data = record['OtherExpenses']
+                form.income.data = record['Income']
+                form.expenses.data = record['Expenses']
+                form.savings_goal.data = record['SavingsGoal']
                 form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
@@ -1854,45 +1878,33 @@ def budget_form():
         
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
+            'last_name': form.last_name.data or '',
+            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
         
         income = parse_number(form.income.data)
-        housing = parse_number(form.housing.data)
-        food = parse_number(form.food.data)
-        transport = parse_number(form.transport.data)
-        other = parse_number(form.other.data)
-        total_expenses = housing + food + transport + other
-        savings = max(0, income * 0.2)
-        surplus_deficit = income - total_expenses - savings
-        
-        rank, total_users = assign_rank(surplus_deficit)
-        badges = assign_badges(surplus_deficit, 0, income, form.language.data)
+        expenses = parse_number(form.expenses.data)
+        savings_goal = parse_number(form.savings_goal.data)
+        budget_advice = generate_budget_advice(income, expenses, savings_goal, form.language.data)
         
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'FirstName': form.first_name.data,
-            'Email': form.email.data,
+            'Income': income,
+            'Expenses': expenses,
+            'SavingsGoal': savings_goal,
             'AutoEmail': str(form.auto_email.data),
-            'Language': form.language.data,
-            'MonthlyIncome': income,
-            'HousingExpenses': housing,
-            'FoodExpenses': food,
-            'TransportExpenses': transport,
-            'OtherExpenses': other,
-            'TotalExpenses': total_expenses,
-            'Savings': savings,
-            'SurplusDeficit': surplus_deficit,
-            'Rank': rank,
-            'TotalUsers': total_users,
-            'Badges': ','.join(badges)
+            'PhoneNumber': form.phone_number.data or '',
+            'FirstName': form.first_name.data,
+            'LastName': form.last_name.data or '',
+            'Email': form.email.data,
+            'Language': form.language.data
         }
         
         try:
@@ -1911,13 +1923,7 @@ def budget_form():
                 html = render_template(
                     'email_templates/budget_email.html',
                     first_name=form.first_name.data,
-                    income=income,
-                    total_expenses=total_expenses,
-                    savings=savings,
-                    surplus_deficit=surplus_deficit,
-                    rank=rank,
-                    total_users=total_users,
-                    badges=badges,
+                    budget_advice=budget_advice,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
@@ -1927,22 +1933,11 @@ def budget_form():
                     form.language.data
                 )
             except Exception as e:
-                flash(get_translation('Error sending email. Your budget is still saved.', form.language.data), 'warning')
+                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
-        try:
-            chart_html = generate_budget_charts(json.dumps(user_data), form.language.data)
-        except Exception as e:
-            flash(get_translation('Error generating charts. Your budget is still available.', form.language.data), 'warning')
-            chart_html = ''
-        
-        session['budget_data'] = {
-            'user_data': user_data,
-            'chart_html': chart_html,
-            'surplus_deficit': surplus_deficit,
-            'rank': rank,
-            'total_users': total_users,
-            'badges': badges
-        }
+        session['budget_timestamp'] = user_data['Timestamp']
+        session.pop('budget_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('budget_dashboard'))
     
@@ -1959,21 +1954,35 @@ def budget_form():
 @app.route('/budget_dashboard')
 def budget_dashboard():
     language = session.get('language', 'English')
-    data = session.get('budget_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('budget_timestamp', '')
     
-    if not data.get('user_data', {}).get('FirstName'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('budget_form'))
+    
+    user_data = get_record_by_id(timestamp, 'Budget')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('budget_form'))
+    
+    income = parse_number(user_data.get('Income', 0))
+    expenses = parse_number(user_data.get('Expenses', 0))
+    savings_goal = parse_number(user_data.get('SavingsGoal', 0))
+    budget_advice = generate_budget_advice(income, expenses, savings_goal, language)
+    
+    try:
+        chart_html = generate_budget_charts(income, expenses, savings_goal, language)
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
+        chart_html = ''
     
     return render_template(
         'budget_dashboard.html',
         tool='Budget Planner',
-        user_data=data.get('user_data', {}),
-        chart_html=data.get('chart_html', ''),
-        surplus_deficit=data.get('surplus_deficit', 0),
-        rank=data.get('rank', 1),
-        total_users=data.get('total_users', 1),
-        badges=data.get('badges', []),
+        user_data=user_data,
+        chart_html=chart_html,
+        budget_advice=budget_advice,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -1982,34 +1991,34 @@ def budget_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/expense_tracker_form', methods=['GET', 'POST'])
 def expense_tracker_form():
     language = session.get('language', 'English')
-    form = ExpenseForm()
+    form = ExpenseTrackerForm()
     
     user_email = session.get('user_email', '')
     if user_email:
         user_data = get_user_data_by_email(user_email, 'ExpenseTracker')
-        form.record_id.choices = [('', 'Create New Record')] + [(row['ID'], row['Description']) for row in user_data]
+        form.record_id.choices = [('', 'Create New Record')] + [(row['Timestamp'], row['Timestamp']) for row in user_data]
     
     if request.method == 'GET':
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
+            form.confirm_email.data = user_email
+            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'ExpenseTracker')
-            record = next((row for row in user_data if row['ID'] == record_id), None)
+            record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
+                form.last_name.data = record['LastName']
+                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
-                form.amount.data = record['Amount']
-                form.description.data = record['Description']
-                form.category.data = record['Category']
-                form.transaction_type.data = record['TransactionType']
-                form.record_id.data = record_id
+                form.expenses.data = record['Expenses']
                 form.auto_email.data = record['AutoEmail'].lower() == 'true'
+                form.record_id.data = record_id
     
     if form.validate_on_submit():
         if user_email and form.email.data != user_email:
@@ -2023,33 +2032,33 @@ def expense_tracker_form():
         
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
+            'last_name': form.last_name.data or '',
+            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
+        
+        expenses = parse_expense_data(form.expenses.data)
+        expense_summary = summarize_expenses(expenses, form.language.data)
+        
         user_data = {
-            'ID': form.record_id.data or str(uuid.uuid4()),
-            'UserEmail': form.email.data,
-            'Amount': parse_number(form.amount.data),
-            'Category': form.category.data,
-            'Date': datetime.now().strftime('%Y-%m-%d'),
-            'Description': form.description.data,
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'TransactionType': form.transaction_type.data,
-            'RunningBalance': 0,
+            'Expenses': form.expenses.data,
+            'AutoEmail': str(form.auto_email.data),
+            'PhoneNumber': form.phone_number.data or '',
             'FirstName': form.first_name.data,
+            'LastName': form.last_name.data or '',
             'Email': form.email.data,
             'Language': form.language.data
         }
         
         try:
             update_or_append_user_data(user_data, 'ExpenseTracker')
-            running_balance = calculate_running_balance(form.email.data)
         except Exception as e:
             flash(get_translation('Error saving data. Please try again.', form.language.data), 'danger')
             return render_template(
@@ -2062,35 +2071,23 @@ def expense_tracker_form():
         if form.auto_email.data and app.config.get('MAIL_ENABLED', False):
             try:
                 html = render_template(
-                    'email_templates/expense_email.html',
+                    'email_templates/expense_tracker_email.html',
                     first_name=form.first_name.data,
-                    amount=user_data['Amount'],
-                    category=user_data['Category'],
-                    description=user_data['Description'],
-                    transaction_type=user_data['TransactionType'],
-                    running_balance=running_balance,
+                    expense_summary=expense_summary,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
-                    get_translation('Your Transaction Record', form.language.data),
+                    get_translation('Your Expense Summary', form.language.data),
                     [form.email.data],
                     html,
                     form.language.data
                 )
             except Exception as e:
-                flash(get_translation('Error sending email. Your transaction is still saved.', form.language.data), 'warning')
+                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
-        try:
-            chart_html = generate_expense_charts(form.email.data, form.language.data)
-        except Exception as e:
-            flash(get_translation('Error generating charts. Your transaction is still available.', form.language.data), 'warning')
-            chart_html = ''
-        
-        session['expense_data'] = {
-            'user_data': user_data,
-            'chart_html': chart_html,
-            'running_balance': running_balance
-        }
+        session['expense_timestamp'] = user_data['Timestamp']
+        session.pop('expense_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('expense_tracker_dashboard'))
     
@@ -2103,26 +2100,37 @@ def expense_tracker_form():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-    
+
 @app.route('/expense_tracker_dashboard')
 def expense_tracker_dashboard():
     language = session.get('language', 'English')
-    data = session.get('expense_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('expense_timestamp', '')
     
-    if not data.get('user_data', {}).get('UserEmail'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('expense_tracker_form'))
     
-    user_email = session.get('user_email', '')
-    transactions = get_user_data_by_email(user_email, 'ExpenseTracker') if user_email else []
+    user_data = get_record_by_id(timestamp, 'ExpenseTracker')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('expense_tracker_form'))
+    
+    expenses = parse_expense_data(user_data.get('Expenses', ''))
+    expense_summary = summarize_expenses(expenses, language)
+    
+    try:
+        chart_html = generate_expense_charts(expenses, language)
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
+        chart_html = ''
     
     return render_template(
         'expense_tracker_dashboard.html',
         tool='Expense Tracker',
-        user_data=data.get('user_data', {}),
-        chart_html=data.get('chart_html', ''),
-        running_balance=data.get('running_balance', 0),
-        transactions=transactions,
+        user_data=user_data,
+        chart_html=chart_html,
+        expense_summary=expense_summary,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -2131,34 +2139,33 @@ def expense_tracker_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/bill_planner_form', methods=['GET', 'POST'])
 def bill_planner_form():
     language = session.get('language', 'English')
-    form = BillForm()
+    form = BillPlannerForm()
     
     user_email = session.get('user_email', '')
     if user_email:
         user_data = get_user_data_by_email(user_email, 'BillPlanner')
-        form.record_id.choices = [('', 'Create New Record')] + [(row['Timestamp'], row['Description']) for row in user_data]
+        form.record_id.choices = [('', 'Create New Record')] + [(row['Timestamp'], row['Timestamp']) for row in user_data]
     
     if request.method == 'GET':
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
+            form.confirm_email.data = user_email
+            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'BillPlanner')
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
+                form.last_name.data = record['LastName']
+                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
-                form.description.data = record['Description']
-                form.amount.data = record['Amount']
-                form.due_date.data = record['DueDate']
-                form.category.data = record['Category']
-                form.recurrence.data = record['Recurrence']
-                form.send_email.data = record['SendEmail'].lower() == 'true'
+                form.bills.data = record['Bills']
+                form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
     if form.validate_on_submit():
@@ -2173,34 +2180,33 @@ def bill_planner_form():
         
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
+            'last_name': form.last_name.data or '',
+            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
         
+        bills = parse_bill_data(form.bills.data)
+        bill_schedule = generate_bill_schedule(bills, form.language.data)
+        
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'Bills': form.bills.data,
+            'AutoEmail': str(form.auto_email.data),
+            'PhoneNumber': form.phone_number.data or '',
             'FirstName': form.first_name.data,
+            'LastName': form.last_name.data or '',
             'Email': form.email.data,
-            'Language': form.language.data,
-            'Description': form.description.data,
-            'Amount': parse_number(form.amount.data),
-            'DueDate': form.due_date.data,
-            'Category': form.category.data,
-            'Recurrence': form.recurrence.data,
-            'Status': 'Pending',
-            'SendEmail': str(form.send_email.data)
+            'Language': form.language.data
         }
         
         try:
             update_or_append_user_data(user_data, 'BillPlanner')
-            if form.send_email.data:
-                schedule_bill_reminder(user_data)
         except Exception as e:
             flash(get_translation('Error saving data. Please try again.', form.language.data), 'danger')
             return render_template(
@@ -2210,28 +2216,26 @@ def bill_planner_form():
                 language=form.language.data
             )
         
-        if form.send_email.data and app.config.get('MAIL_ENABLED', False):
+        if form.auto_email.data and app.config.get('MAIL_ENABLED', False):
             try:
                 html = render_template(
-                    'email_templates/bill_email.html',
+                    'email_templates/bill_planner_email.html',
                     first_name=form.first_name.data,
-                    description=user_data['Description'],
-                    amount=user_data['Amount'],
-                    due_date=user_data['DueDate'],
+                    bill_schedule=bill_schedule,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
-                    get_translation('Your Bill Added', form.language.data),
+                    get_translation('Your Bill Schedule', form.language.data),
                     [form.email.data],
                     html,
                     form.language.data
                 )
             except Exception as e:
-                flash(get_translation('Error sending email. Your bill is still saved.', form.language.data), 'warning')
+                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
-        session['bill_data'] = {
-            'user_data': user_data
-        }
+        session['bill_timestamp'] = user_data['Timestamp']
+        session.pop('bill_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('bill_planner_dashboard'))
     
@@ -2248,20 +2252,33 @@ def bill_planner_form():
 @app.route('/bill_planner_dashboard')
 def bill_planner_dashboard():
     language = session.get('language', 'English')
-    data = session.get('bill_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('bill_timestamp', '')
     
-    if not data.get('user_data', {}).get('FirstName'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('bill_planner_form'))
     
-    user_email = session.get('user_email', '')
-    bills = get_user_data_by_email(user_email, 'BillPlanner') if user_email else []
+    user_data = get_record_by_id(timestamp, 'BillPlanner')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('bill_planner_form'))
+    
+    bills = parse_bill_data(user_data.get('Bills', ''))
+    bill_schedule = generate_bill_schedule(bills, language)
+    
+    try:
+        chart_html = generate_bill_charts(bills, language)
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
+        chart_html = ''
     
     return render_template(
         'bill_planner_dashboard.html',
         tool='Bill Planner',
-        user_data=data.get('user_data', {}),
-        bills=bills,
+        user_data=user_data,
+        chart_html=chart_html,
+        bill_schedule=bill_schedule,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -2270,7 +2287,6 @@ def bill_planner_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/mark_bill_paid/<timestamp>', methods=['POST'])
 def mark_bill_paid(timestamp):
     language = session.get('language', 'English')
