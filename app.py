@@ -1952,8 +1952,8 @@ def budget_dashboard():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
-@app.route('/expense_form', methods=['GET', 'POST'])
-def expense_form():
+@app.route('/expense_tracker_form', methods=['GET', 'POST'])
+def expense_tracker_form():
     language = session.get('language', 'English')
     form = ExpenseForm()
     
@@ -1984,7 +1984,7 @@ def expense_form():
         if user_email and form.email.data != user_email:
             flash(get_translation('Email does not match logged-in user.', form.language.data), 'danger')
             return render_template(
-                'expense_form.html',
+                'expense_tracker_form.html',
                 form=form,
                 translations=translations.get(form.language.data, translations['English']),
                 language=form.language.data
@@ -2020,7 +2020,7 @@ def expense_form():
         except Exception as e:
             flash(get_translation('Error saving data. Please try again.', form.language.data), 'danger')
             return render_template(
-                'expense_form.html',
+                'expense_tracker_form.html',
                 form=form,
                 translations=translations.get(form.language.data, translations['English']),
                 language=form.language.data
@@ -2059,10 +2059,10 @@ def expense_form():
             'running_balance': running_balance
         }
         
-        return redirect(url_for('expense_dashboard'))
+        return redirect(url_for('expense_tracker_dashboard'))
     
     return render_template(
-        'expense_form.html',
+        'expense_tracker_form.html',
         form=form,
         translations=translations.get(language, translations['English']),
         language=language,
@@ -2071,20 +2071,20 @@ def expense_form():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
-@app.route('/expense_dashboard')
-def expense_dashboard():
+@app.route('/expense_tracker_dashboard')
+def expense_tracker_dashboard():
     language = session.get('language', 'English')
     data = session.get('expense_data', {})
     
     if not data.get('user_data', {}).get('UserEmail'):
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
-        return redirect(url_for('expense_form'))
+        return redirect(url_for('expense_tracker_form'))
     
     user_email = session.get('user_email', '')
     transactions = get_user_data_by_email(user_email, 'ExpenseTracker') if user_email else []
     
     return render_template(
-        'expense_dashboard.html',
+        'expense_tracker_dashboard.html',
         tool='Expense Tracker',
         user_data=data.get('user_data', {}),
         chart_html=data.get('chart_html', ''),
@@ -2099,8 +2099,8 @@ def expense_dashboard():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
-@app.route('/bill_form', methods=['GET', 'POST'])
-def bill_form():
+@app.route('/bill_planner_form', methods=['GET', 'POST'])
+def bill_planner_form():
     language = session.get('language', 'English')
     form = BillForm()
     
@@ -2132,7 +2132,7 @@ def bill_form():
         if user_email and form.email.data != user_email:
             flash(get_translation('Email does not match logged-in user.', form.language.data), 'danger')
             return render_template(
-                'bill_form.html',
+                'bill_planner_form.html',
                 form=form,
                 translations=translations.get(form.language.data, translations['English']),
                 language=form.language.data
@@ -2171,7 +2171,7 @@ def bill_form():
         except Exception as e:
             flash(get_translation('Error saving data. Please try again.', form.language.data), 'danger')
             return render_template(
-                'bill_form.html',
+                'bill_planner_form.html',
                 form=form,
                 translations=translations.get(form.language.data, translations['English']),
                 language=form.language.data
@@ -2200,10 +2200,10 @@ def bill_form():
             'user_data': user_data
         }
         
-        return redirect(url_for('bill_dashboard'))
+        return redirect(url_for('bill_planner_dashboard'))
     
     return render_template(
-        'bill_form.html',
+        'bill_planner_form.html',
         form=form,
         translations=translations.get(language, translations['English']),
         language=language,
@@ -2212,20 +2212,20 @@ def bill_form():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
-@app.route('/bill_dashboard')
-def bill_dashboard():
+@app.route('/bill_planner_dashboard')
+def bill_planner_dashboard():
     language = session.get('language', 'English')
     data = session.get('bill_data', {})
     
     if not data.get('user_data', {}).get('FirstName'):
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
-        return redirect(url_for('bill_form'))
+        return redirect(url_for('bill_planner_form'))
     
     user_email = session.get('user_email', '')
     bills = get_user_data_by_email(user_email, 'BillPlanner') if user_email else []
     
     return render_template(
-        'bill_dashboard.html',
+        'bill_planner_dashboard.html',
         tool='Bill Planner',
         user_data=data.get('user_data', {}),
         bills=bills,
@@ -2245,12 +2245,12 @@ def mark_bill_paid(timestamp):
     
     if not user_email:
         flash(get_translation('You must be logged in to perform this action.', language), 'danger')
-        return redirect(url_for('bill_form'))
+        return redirect(url_for('bill_planner_form'))
     
     bill = get_record_by_id(timestamp, 'BillPlanner')
     if not bill or bill.get('Email') != user_email:
         flash(get_translation('Bill not found or unauthorized access.', language), 'danger')
-        return redirect(url_for('bill_dashboard'))
+        return redirect(url_for('bill_planner_dashboard'))
     
     bill['Status'] = 'Paid'
     try:
@@ -2259,7 +2259,7 @@ def mark_bill_paid(timestamp):
     except Exception as e:
         flash(get_translation('Error updating bill status.', language), 'danger')
     
-    return redirect(url_for('bill_dashboard'))
+    return redirect(url_for('bill_planner_dashboard'))
 
 # Error handlers
 @app.errorhandler(404)
