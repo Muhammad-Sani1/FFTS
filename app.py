@@ -148,7 +148,7 @@ WORKSHEETS = {
     },
     'ExpenseTracker': {
         'name': 'ExpenseTrackerSheet',
-        'headers': ['ID', 'UserEmail', 'Amount', 'Category', 'Date', 'Description', 'Timestamp', 'TransactionType', 'RunningBalance']
+        'headers': ['ID', 'UserEmail', 'Amount', 'Category', 'Date', 'Description', 'Timestamp', 'TransactionType', 'RunningBalance', 'Email', 'FirstName', 'Language']
     },
     'BillPlanner': {
         'name': 'BillPlannerSheet',
@@ -2002,17 +2002,21 @@ def expense_tracker_form():
         }
         store_authentication_data(auth_data)
         
-        user_data = {
-            'ID': form.record_id.data or str(uuid.uuid4()),
-            'UserEmail': form.email.data,
-            'Amount': parse_number(form.amount.data),
-            'Category': form.category.data,
-            'Date': datetime.now().strftime('%Y-%m-%d'),
-            'Description': form.description.data,
-            'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'TransactionType': form.transaction_type.data,
-            'RunningBalance': 0
-        }
+        
+user_data = {
+    'ID': form.record_id.data or str(uuid.uuid4()),
+    'UserEmail': form.email.data,
+    'Amount': parse_number(form.amount.data),
+    'Category': form.category.data,
+    'Date': datetime.now().strftime('%Y-%m-%d'),
+    'Description': form.description.data,
+    'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    'TransactionType': form.transaction_type.data,
+    'RunningBalance': 0,
+    'FirstName': form.first_name.data,
+    'Email': form.email.data,
+    'Language': form.language.data
+}
         
         try:
             update_or_append_user_data(user_data, 'ExpenseTracker')
