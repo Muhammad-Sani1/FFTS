@@ -721,7 +721,7 @@ class HealthScoreForm(FlaskForm):
         }
     )
     income_revenue = FloatField(
-        'Money You Get Every Month (₦)',
+        'IncomeRevenue  (₦)',
         validators=[DataRequired(), NumberRange(min=0, max=10000000000)],
         render_kw={
             'placeholder': 'e.g. 150,000',
@@ -730,7 +730,7 @@ class HealthScoreForm(FlaskForm):
         }
     )
     expenses_costs = FloatField(
-        'Money You Spend Every Month (₦)',
+        'ExpenseCosts (₦)',
         validators=[DataRequired(), NumberRange(min=0, max=10000000000)],
         render_kw={
             'placeholder': 'e.g. 60,000',
@@ -739,7 +739,7 @@ class HealthScoreForm(FlaskForm):
         }
     )
     debt_loan = FloatField(
-        'Money You Owe (₦)',
+        'LoanDebsts (₦)',
         validators=[DataRequired(), NumberRange(min=0, max=10000000000)],
         render_kw={
             'placeholder': 'e.g. 25,000',
@@ -748,7 +748,7 @@ class HealthScoreForm(FlaskForm):
         }
     )
     debt_interest_rate = FloatField(
-        'Extra Percentage on Money You Owe (%)',
+        'Interests Percentage on Money You Owe (%)',
         validators=[Optional(), NumberRange(min=0, max=100)],
         render_kw={
             'placeholder': 'e.g. 10%',
