@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcome to Ficore Africa - Your financial growth passport for Africa. Access tools to calculate your financial health, net worth, emergency fund, and more.">
+    <meta name="keywords" content="ficore africa, financial health, net worth, emergency fund, financial quiz_form, budget_form planner, expense tracker, bill planner">
+    <meta name="author" content="Ficore Africa">
+    <!-- Open Graph and Twitter Card Tags -->
+    <meta property="og:title" content="Ficore Africa - {{ translations['Financial Growth Tools'] }}">
+    <meta property="og:description" content="{{ translations['Access essential tools and insights to understand, manage, and grow your finances across Africa'] }}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/ficore_logo.png', _external=True) }}">
+    <meta property="og:url" content="https://ficore-ai.onrender.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Ficore Africa - {{ translations['Financial Growth Tools'] }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD, #F5F7FA);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            position: relative;
+        }
+        .navbar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1rem;
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .logo-container {
+            margin-bottom: 1rem;
+        }
+        .logo-container img {
+            max-width: 180px;
+        }
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .language-label {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+        }
+        header {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #E0E0E0;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+        .card .tooltip-fallback {
+            display: none;
+            background: #E3F2FD;
+            border: 1px solid #0288D1;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 4px;
+            font-size: 0.9rem;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            z-index: 10;
+            width: 90%;
+            left: 5%;
+            top: 100%;
+        }
+        .card:hover .tooltip-fallback {
+            display: block;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #28A745, #1E88E5);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.35rem;
+            white-space: nowrap;
+            border: 2px solid #1565C0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .card-body {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+        .start-here-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FFD700;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        h1, h3, h4 {
+            color: #28A745;
+            font-weight: 600;
+        }
+        h1 {
+            font-size: 2.5rem;
+        }
+        h3 {
+            font-size: 1.35rem;
+        }
+        h4 {
+            font-size: 1.2rem;
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .lead {
+            font-size: 1.25rem;
+            color: #333;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: #FFFFFF;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #1B5E20, #1B5E20);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary::after {
+            content: "➡️";
+            font-size: 1rem;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #F57C00, #FF9800);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn-email {
+            background: linear-gradient(135deg, #FF5722, #D81B60);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-email:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn-go {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 8px;
+            color: #FFFFFF;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-go:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn-back {
+            background: linear-gradient(135deg, #0288D1, #1565C0);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 8px;
+            color: #FFFFFF;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 1rem;
+        }
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .flash-message {
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        .tool-description {
+            color: #333;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-top: 0.5rem;
+            flex-grow: 1;
+        }
+        .feature-label {
+            color: #333;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .tool-description .info-icon {
+            margin-left: 5px;
+            font-size: 0.9rem;
+            color: #0288D1;
+            cursor: pointer;
+        }
+        .tooltip-fallback {
+            display: none;
+            background: #E3F2FD;
+            border: 1px solid #0288D1;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 4px;
+            font-size: 0.9rem;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            z-index: 10;
+            width: 90%;
+            left: 5%;
+        }
+        .tooltip-fallback.active {
+            display: block;
+        }
+        .tooltip-fallback .close-btn {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            font-size: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #dc3545;
+        }
+        .hero-cta {
+            margin-top: 1.5rem;
+        }
+        .why-ficore {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .why-ficore ul {
+            list-style: none;
+            padding: 0;
+        }
+        .why-ficore li {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #F5F7FA;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+        .why-ficore li::before {
+            content: "✔";
+            color: #28A745;
+            font-size: 1.2rem;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E3F2FD, #F5F7FA);
+            border-radius: 12px;
+            border: 1px solid #0288D1;
+        }
+        .cta-section p {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .daily-tip-spotlight {
+            background: #E3F2FD;
+            border: 1px solid #0288D1;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .daily-tip-spotlight p {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+            color: #333;
+        }
+        .daily-tip-spotlight .emoji {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        footer {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        footer .btn-home {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 8px;
+            color: #FFFFFF;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        footer .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .social-links {
+            margin-top: 1rem;
+        }
+        .social-links a {
+            margin: 0 0.5rem;
+            color: #0288D1;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+        .social-links a:hover {
+            color: #2E7D32;
+        }
+        .about-tagline {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        @media (max-width: 600px) {
+            .col-md-4 {
+                width: 100%;
+            }
+            .card {
+                margin-bottom: 1.5rem;
+            }
+            .card-header {
+                font-size: 1.25rem;
+                white-space: normal;
+                padding: 0.75rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            h3 {
+                font-size: 1.25rem;
+            }
+            h4 {
+                font-size: 1.1rem;
+            }
+            .lead {
+                font-size: 1rem;
+            }
+            .btn-primary {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            .language-selector {
+                max-width: 160px;
+            }
+            .logo-container img {
+                max-width: 150px;
+            }
+            .tooltip-fallback {
+                width: 80%;
+                left: 10%;
+            }
+            .why-ficore li {
+                font-size: 1rem;
+            }
+            footer .btn-back, footer .btn-home {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navbar with Centered Logo and Language Selector -->
+        <div class="navbar">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='img/ficore_logo.png') }}" alt="Ficore Africa Logo" class="img-fluid">
+            </div>
+            <div class="language-selector">
+                <span class="language-label">🌍 {{ translations['Language'] }}:</span>
+                <form method="POST" action="{{ url_for('change_language') }}">
+                    <div class="input-group">
+                        <select name="language" class="form-select" aria-label="{{ translations['Select Language'] }}">
+                            <option value="English" {% if session.get('language', 'English') == 'English' %}selected{% endif %}>English</option>
+                            <option value="Hausa" {% if session.get('language', 'Hausa') == 'Hausa' %}selected{% endif %}>Hausa</option>
+                        </select>
+                        <button type="submit" class="btn btn-go" aria-label="{{ translations['Change Language'] }}">{{ translations['Go'] }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Hero Section -->
+        <header class="my-4">
+            <h1>{{ translations['Unlock Your Financial Freedom'] }}</h1>
+            <p class="lead">{{ translations['Access essential tools and insights to understand, manage, and grow your finances across Africa'] }}</p>
+            <div class="hero-cta">
+                <p class="lead" style="font-weight: 600; color: #0288D1;">{{ translations['Discover Your Financial Tools Below'] }}</p>
+            </div>
+        </header>
+        <!-- Why Ficore Africa Section  -->
+        <section class="why-ficore">
+            <h3>{{ translations['Why Ficore Africa?'] }}</h3>
+            <ul>
+                <li>{{ translations['Localized for Africa with support for Naira and regional financial contexts'] }}</li>
+                <li>{{ translations['Empowers financial literacy with easy-to-use tools'] }}</li>
+                <li>{{ translations['Provides actionable insights for better financial decisions'] }}</li>
+            </ul>
+        </section>
+        <!-- Call to Action Section -->
+        <section class="cta-section">
+            <p><span class="emoji">🎯</span> {{ translations['New here? Start with your Financial Health Score to get personalized recommendations.'] }}</p>
+            <a href="{{ url_for('health_score_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Begin Financial Health Score Assessment'] }}">{{ translations['Begin Now'] }}</a>
+        </section>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container my-3">
+                    {% for category, message in messages %}
+                        <div class="flash-message alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <!-- Tools Grid -->
+        <div class="row">
+            <!-- Track Your Finances Section -->
+            <h4><span class="emoji">🔍</span> {{ translations['Track Your Finances'] }}</h4>
+            <!-- Financial Health Score -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">📊</span> {{ translations['Financial Health Score'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['This tool evaluates your income, expenses, and debt to provide a health score'] }}
+                            <span class="info-icon" data-tooltip-target="health-score-tooltip" title="{{ translations['Evaluates income, expenses, and debt for a health score'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('health_score_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Financial Health Score Assessment'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="health-score-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Evaluates income, expenses, and debt for a health score'] }}</span>
+                        </div>
+                        <span class="start-here-tag">{{ translations['Start Here'] }}</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Net Worth Calculator -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">💰</span> {{ translations['Net Worth Calculator'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['Calculate your net worth from assets and liabilities'] }}
+                            <span class="info-icon" data-tooltip-target="net-worth-tooltip" title="{{ translations['Net worth is assets minus liabilities'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('net_worth_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Net Worth Calculator'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="net-worth-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Net worth is assets minus liabilities'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Emergency Fund Calculator -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">🏦</span> {{ translations['Emergency Fund Calculator'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['Aims to cover 3-6 months of expenses for financial security'] }}
+                            <span class="info-icon" data-tooltip-target="emergency-fund-tooltip" title="{{ translations['Aims to cover 3-6 months of expenses for financial security'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('emergency_fund_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Emergency Fund Calculator'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="emergency-fund-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Aims to cover 3-6 months of expenses for financial security'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Plan & Budget Section -->
+            <h4><span class="emoji">💡</span> {{ translations['Plan & Budget'] }}</h4>
+            <!-- Monthly Budget Planner -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">📅</span> {{ translations['Monthly Budget Planner'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['Manage income and expenses with budget'] }}
+                            <span class="info-icon" data-tooltip-target="budget_form-tooltip" title="{{ translations['Allocate income across expense categories'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('budget_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Monthly Budget Planner'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="budget_form-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Allocate income across expense categories'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Expense Tracker -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">💸</span> {{ translations['Expense Tracker'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['Track expenses by category and date'] }}
+                            <span class="info-icon" data-tooltip-target="expense-tracker-tooltip" title="{{ translations['Log and edit expenses for spending insights'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('expense_tracker_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Expense Tracker'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="expense-tracker-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Log and edit expenses for spending insights'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Bill Planner -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">📋</span> {{ translations['Bill Planner'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['Organize bills by amount and due date'] }}
+                            <span class="info-icon" data-tooltip-target="bill-planner-tooltip" title="{{ translations['Manage and mark bills as paid'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('bill_planner_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Bill Planner'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="bill-planner-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Manage and mark bills as paid'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Know Yourself Section -->
+            <h4><span class="emoji">👤</span> {{ translations['Know Yourself'] }}</h4>
+            <!-- Financial Personality Quiz -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="emoji">❓</span> {{ translations['Financial Personality Quiz'] }}
+                    </div>
+                    <div class="card-body">
+                        <p class="tool-description">
+                            {{ translations['Test your financial knowledge with a quiz'] }}
+                            <span class="info-icon" data-tooltip-target="quiz_form-tooltip" title="{{ translations['Answer questions to assess financial literacy'] }}" aria-label="More info">ℹ️</span>
+                        </p>
+                        <a href="{{ url_for('quiz_form') }}" class="btn btn-primary" role="button" aria-label="{{ translations['Start Financial Personality Quiz'] }}">{{ translations['Start Now'] }}</a>
+                        <div class="tooltip-fallback" id="quiz_form-tooltip">
+                            <button class="close-btn" aria-label="Close tooltip">×</button>
+                            <span>{{ translations['Answer questions to assess financial literacy'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Daily Tip/Feature Spotlight -->
+        <section class="daily-tip-spotlight">
+            <p><span class="emoji">💡</span> {{ translations['Daily Tip: Pay yourself first before expenses'] }}</p>
+            <p><span class="emoji">📌</span> {{ translations['Feature Spotlight: Try our Net Worth Calculator!'] }}</p>
+        </section>
+        <!-- Contact Information -->
+        <div class="text-center my-4">
+            <p>{{ translations['Contact Us'] }} <a href="/cdn-cgi/l/email-protection#2f6966606c71660d626a0d6266716c2f68646c6065226f6361" class="btn btn-email" aria-label="{{ translations['Email Ficore Africa Support'] }}">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}.</p>
+        </div>
+        <!-- Feedback Link -->
+        <div class="text-center my-4">
+            <a href="{{ FEEDBACK_FORM_URL }}" class="btn btn-secondary" target="_blank" aria-label="{{ translations['Provide Feedback'] }}">{{ translations['Provide Feedback'] }}</a>
+        </div>
+        <!-- Footer -->
+        <footer>
+            <a href="javascript:history.back()" class="btn btn-back" aria-label="{{ translations['Go Back'] }}">{{ translations['Back'] }}</a>
+            <a href="{{ url_for('index') }}" class="btn btn-home" aria-label="{{ translations['Return to Home'] }}">{{ translations['Home'] }}</a>
+            <div class="social-links">
+                <a href="https://twitter.com/ficoreafrica" target="_blank" aria-label="Follow us on Twitter">Twitter</a>
+                <a href="https://facebook.com/ficoreafrica" target="_blank" aria-label="Follow us on Facebook">Facebook</a>
+                <a href="https://linkedin.com/company/ficoreafrica" target="_blank" aria-label="Follow us on LinkedIn">LinkedIn</a>
+            </div>
+            <p class="about-tagline">{{ translations['About Ficore Africa: Empowering financial growth across Africa since 2023'] }}</p>
+        </footer>
+    </div>
+    <script data-cfasync="false" defer src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" onerror="console.error('Failed to load bootstrap.bundle.min.js.');"></script>
+    <script type="text/javascript">
+        // Global variables for file data handling
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        // Utility function to check if a cell is filled
+        function filledCell(cell) {
+            try {
+                return cell !== '' && cell != null;
+            } catch (e) {
+                console.error('Error in filledCell:', e);
+                return false;
+            }
+        }
+        // Function to load file data with robust error handling
+        function loadFileData(filename) {
+            try {
+                // Validate inputs
+                if (!filename || typeof filename !== 'string') {
+                    console.error('Invalid filename provided to loadFileData');
+                    return "";
+                }
+                // Check if the file is an XLSX and exists in the lookup
+                if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                    // Ensure XLSX library is available
+                    if (typeof XLSX === 'undefined') {
+                        console.error('XLSX library not loaded');
+                        return "";
+                    }
+                    // Read the workbook from base64 data
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+                        console.error('Invalid workbook or no sheets found');
+                        return "";
+                    }
+                    // Get the first sheet
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    if (!worksheet) {
+                        console.error('Worksheet not found');
+                        return "";
+                    }
+                    // Convert sheet to JSON, excluding blank rows
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    if (!Array.isArray(jsonData)) {
+                        console.error('Failed to convert sheet to JSON');
+                        return "";
+                    }
+                    // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                    var filteredData = jsonData.filter(row => {
+                        try {
+                            return Array.isArray(row) && row.some(filledCell);
+                        } catch (e) {
+                            console.error('Error filtering row:', e);
+                            return false;
+                        }
+                    });
+                    // Heuristic to find the header row
+                    var headerRowIndex = -1;
+                    for (var i = 0; i < filteredData.length - 1; i++) {
+                        try {
+                            var currentFilled = filteredData[i].filter(filledCell).length;
+                            var nextFilled = filteredData[i + 1]?.filter(filledCell).length || 0;
+                            if (currentFilled >= nextFilled) {
+                                headerRowIndex = i;
+                                break;
+                            }
+                        } catch (e) {
+                            console.error('Error in header row heuristic:', e);
+                            continue;
+                        }
+                    }
+                    // Fallback if header row not found or too far down
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    // Convert filtered data back to CSV
+                    var csvSheet = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    var csv = XLSX.utils.sheet_to_csv(csvSheet, { header: 1 });
+                    return csv || "";
+                }
+                // Fallback for non-XLSX files
+                return gk_fileData[filename] || "";
+            } catch (e) {
+                console.error('Error in loadFileData:', e);
+                return "";
+            }
+        }
+        // DOM event listeners with error handling
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                // Tooltip functionality for mobile and desktop
+                document.querySelectorAll('.info-icon').forEach(icon => {
+                    try {
+                        icon.addEventListener('click', function(e) {
+                            try {
+                                e.preventDefault();
+                                const targetId = this.getAttribute('data-tooltip-target');
+                                if (!targetId) {
+                                    console.warn('Tooltip target ID not found');
+                                    return;
+                                }
+                                const tooltip = document.getElementById(targetId);
+                                if (!tooltip) {
+                                    console.warn(`Tooltip element with ID ${targetId} not found`);
+                                    return;
+                                }
+                                const isActive = tooltip.classList.contains('active');
+                                document.querySelectorAll('.tooltip-fallback').forEach(t => {
+                                    try {
+                                        t.classList.remove('active');
+                                    } catch (err) {
+                                        console.error('Error removing active class from tooltip:', err);
+                                    }
+                                });
+                                if (!isActive) {
+                                    tooltip.classList.add('active');
+                                    const span = tooltip.querySelector('span');
+                                    if (span) {
+                                        span.textContent = this.getAttribute('title') || 'Info not available';
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('Error in info-icon click handler:', e);
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error setting up info-icon listener:', e);
+                    }
+                });
+                // Close button for tooltips
+                document.querySelectorAll('.tooltip-fallback .close-btn').forEach(btn => {
+                    try {
+                        btn.addEventListener('click', function() {
+                            try {
+                                const parent = this.parentElement;
+                                if (parent) {
+                                    parent.classList.remove('active');
+                                }
+                            } catch (e) {
+                                console.error('Error in tooltip close button handler:', e);
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error setting up close-btn listener:', e);
+                    }
+                });
+                // Hover tooltip for desktop
+                if (window.matchMedia("(min-width: 601px)").matches) {
+                    document.querySelectorAll('.card').forEach(card => {
+                        try {
+                            card.addEventListener('mouseenter', function() {
+                                try {
+                                    const tooltip = this.querySelector('.tooltip-fallback');
+                                    if (tooltip) {
+                                        tooltip.style.display = 'block';
+                                    }
+                                } catch (e) {
+                                    console.error('Error in card mouseenter handler:', e);
+                                }
+                            });
+                            card.addEventListener('mouseleave', function() {
+                                try {
+                                    const tooltip = this.querySelector('.tooltip-fallback');
+                                    if (tooltip) {
+                                        tooltip.style.display = 'none';
+                                    }
+                                } catch (e) {
+                                    console.error('Error in card mouseleave handler:', e);
+                                }
+                            });
+                        } catch (e) {
+                            console.error('Error setting up card hover listeners:', e);
+                        }
+                    });
+                }
+                // Prevent hover tooltip on mobile
+                if (window.matchMedia("(max-width: 600px)").matches) {
+                    document.querySelectorAll('.card').forEach(card => {
+                        try {
+                            card.addEventListener('mouseenter', function(e) {
+                                try {
+                                    e.preventDefault();
+                                } catch (err) {
+                                    console.error('Error in mobile hover prevention:', err);
+                                }
+                            });
+                        } catch (e) {
+                            console.error('Error setting up mobile hover prevention:', e);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error in DOMContentLoaded handler:', e);
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93a8ba5b2ce5139b',t:'MTc0NjM2OTM2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

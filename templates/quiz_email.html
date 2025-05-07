@@ -1,0 +1,82 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficore Africa Quiz Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #1E7F71; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+        <h2 style="color: #FFFFFF; margin: 0;">Ficore Africa Quiz Report</h2>
+        <p style="font-style: italic; color: #E0F7FA; font-size: 0.9rem; margin: 5px 0 0 0;">
+            Financial growth passport for Africa
+        </p>
+    </div>
+    <p>Dear {{ user_name }},</p>
+    <p>Here are your results from the Ficore Africa Financial Quiz.</p>
+    <ul>
+        <li><strong>Score</strong>: {{ score }} out of 5</li>
+        <li><strong>Personality</strong>: {{ personality }}</li>
+    </ul>
+    <p>Take this advice to enhance your financial habits: {{ advice }}</p>
+    <p style="margin-bottom: 10px;">
+        Want to learn more? Check out this course:
+        <a href="{{ course_url }}" style="display: inline-block; padding: 10px 20px; background-color: #FBC02D; color: #333; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">{{ course_title }}</a>
+    </p>
+    <p style="margin-bottom: 10px;">
+        Please provide feedback on your experience:
+        <a href="{{ FEEDBACK_FORM_URL }}" style="display: inline-block; padding: 10px 20px; background-color: #2E7D32; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">Feedback Form</a>
+    </p>
+    <p style="margin-bottom: 10px;">
+        Want Smart Insights? Join our waitlist:
+        <a href="{{ WAITLIST_FORM_URL }}" style="display: inline-block; padding: 10px 20px; background-color: #0288D1; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">Join Waitlist</a>
+    </p>
+    <p style="margin-bottom: 10px;">
+        Need expert advice? Book a consultancy:
+        <a href="{{ CONSULTANCY_FORM_URL }}" style="display: inline-block; padding: 10px 20px; background-color: #D81B60; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">Book Consultancy</a>
+    </p>
+    <p>Thank you for choosing Ficore Africa!</p>
+    <p style="font-size: 0.8rem; color: #666; margin-top: 20px;">
+        © 2025 Ficore Africa. All rights reserved.
+    </p>
+</body>
+</html>

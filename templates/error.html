@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Ficore AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom, #F5F7FA, #E3F2FD);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            background: #FFFFFF;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            color: #d32f2f;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: #d32f2f;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #718096;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact {
+            font-size: 0.95rem;
+            color: #1E88E5;
+            margin-top: 1rem;
+        }
+
+        .contact a {
+            color: #1E88E5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact a:hover {
+            text-decoration: underline;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #28A745, #1E88E5);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .container {
+                padding: 2rem;
+                max-width: 90%;
+            }
+
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .error-icon {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            .contact {
+                font-size: 0.9rem;
+            }
+
+            .back-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='img/ficore_logo.png') }}" alt="Ficore Logo" class="logo">
+        <i class="fas fa-exclamation-circle error-icon"></i>
+        <h2>Oops, Something Went Wrong</h2>
+        <p>{{ message }}</p>
+        <a href="{{ url_for('index') }}" class="back-button">Click Here to Go Back</a>
+        <p class="contact">Need help? Contact us at <a href="mailto:Ficoreai@outlook.com">Ficoreai@outlook.com</a>.</p>
+    </div>
+</body>
+</html>

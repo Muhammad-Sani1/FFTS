@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Plan your monthly budget with Ficore Africa to manage your income and expenses.">
+    <meta name="keywords" content="ficore africa, budget planner, financial planning, Africa SME finance">
+    <meta name="author" content="Ficore Africa">
+    <title>{{ translations['Monthly Budget Planner'] }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD, #F5F7FA);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .header {
+            background: #1E7F71;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header h2 {
+            color: #FFFFFF;
+            margin: 0;
+        }
+        .header p {
+            font-style: italic;
+            color: #E0F7FA;
+            font-size: 0.9rem;
+            margin: 5px 0 0 0;
+        }
+        .form-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-5px);
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            color: #0288D1;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-control, .form-select {
+            border: 2px solid #0288D1;
+            border-radius: 8px;
+            padding: 10px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            min-height: 48px;
+            font-size: 1rem;
+            width: 100%;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #2E7D32;
+            box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+            outline: none;
+        }
+        .form-control:invalid, .form-select:invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            min-width: 120px;
+            min-height: 48px;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #1B5E20, #01579B);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            border: 1px solid #4CAF50;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        .btn-primary:hover::after {
+            width: 200px;
+            height: 200px;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 120px;
+            min-height: 48px;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+        .info-icon {
+            cursor: pointer;
+            color: #0288D1;
+            margin-left: 5px;
+            font-size: 0.9rem;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .info-icon:hover {
+            color: #2E7D32;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .info-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .valid-feedback {
+            color: #28a745;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .form-control.is-valid ~ .valid-feedback, .form-select.is-valid ~ .valid-feedback {
+            display: block;
+        }
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+        .form-control.is-valid, .form-select.is-valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        .number-display {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #495057;
+            font-size: 1rem;
+        }
+        .number-input {
+            padding-left: 10px;
+        }
+        .budget-preview {
+            margin-top: 0.5rem;
+            color: #0288D1;
+            font-size: 0.9rem;
+        }
+        .budget-value {
+            font-weight: 700;
+        }
+        .deficit {
+            color: #D32F2F;
+        }
+        .advice-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-top: 0.5rem;
+        }
+        .loading-spinner {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .loading-spinner i {
+            font-size: 1.5rem;
+            color: #2E7D32;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 576px) {
+            .container {
+                padding: 10px;
+            }
+            .form-card {
+                padding: 1rem;
+            }
+            .btn-primary, .btn-secondary {
+                font-size: 1rem;
+                padding: 10px 20px;
+            }
+            .form-control, .form-select {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>{{ translations['Monthly Budget Planner'] }}</h2>
+            <p>{{ translations['Financial growth passport for Africa'] }}</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-card">
+            <h3>{{ translations['Plan Your Monthly Budget'] }}</h3>
+            <form method="POST" id="submission-form" action="{{ url_for('budget_form') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.first_name.label(class="form-label", for="first_name") }}
+                    {{ form.first_name(class="form-control", id="first_name", placeholder=translations['Enter your first name'], required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="First Name Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter your first name for your report.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['First Name Required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.email.label(class="form-label", for="email") }}
+                    {{ form.email(class="form-control", id="email", placeholder=translations['Enter your email'], required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="Email Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Get your budget report by email.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Email'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.confirm_email.label(class="form-label", for="confirm_email") }}
+                    {{ form.confirm_email(class="form-control", id="confirm_email", placeholder=translations['Confirm your email'], required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="Confirm Email Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Re-enter your email to confirm.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Emails match!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Emails must match'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.language.label(class="form-label", for="language") }}
+                    {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="Language Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Choose your language.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Language selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Language required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.record_id.label(class="form-label", for="record_id") }}
+                    {{ form.record_id(class="form-select", id="record_id") }}
+                    <span class="info-icon" aria-label="Record ID Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select a previous budget to edit or start new.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Record selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid selection'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.income.label(class="form-label", for="income") }}
+                    <div style="position: relative;">
+                        {{ form.income(class="form-control number-input", type="number", step="0.01", min="0", id="income", placeholder=translations['e.g. ₦150,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="income"></span>
+                        <span class="info-icon" aria-label="Monthly Income Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Your monthly pay or income.'] }}</span>
+                        </span>
+                    </div>
+                    <div class="valid-feedback">{{ translations['Valid amount!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Number'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.housing.label(class="form-label", for="housing") }}
+                    <div style="position: relative;">
+                        {{ form.housing(class="form-control number-input", type="number", step="0.01", min="0", id="housing", placeholder=translations['e.g. ₦30,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="housing"></span>
+                        <span class="info-icon" aria-label="Housing Expenses Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Rent, electricity, or water bills.'] }}</span>
+                        </span>
+                    </div>
+                    <div class="valid-feedback">{{ translations['Valid amount!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Number'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.food.label(class="form-label", for="food") }}
+                    <div style="position: relative;">
+                        {{ form.food(class="form-control number-input", type="number", step="0.01", min="0", id="food", placeholder=translations['e.g. ₦45,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="food"></span>
+                        <span class="info-icon" aria-label="Food Expenses Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Money spent on food each month.'] }}</span>
+                        </span>
+                    </div>
+                    <div class="valid-feedback">{{ translations['Valid amount!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Number'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.transport.label(class="form-label", for="transport") }}
+                    <div style="position: relative;">
+                        {{ form.transport(class="form-control number-input", type="number", step="0.01", min="0", id="transport", placeholder=translations['e.g. ₦10,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="transport"></span>
+                        <span class="info-icon" aria-label="Transport Expenses Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Bus, bike, taxi, or fuel costs.'] }}</span>
+                        </span>
+                    </div>
+                    <div class="valid-feedback">{{ translations['Valid amount!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Number'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.other.label(class="form-label", for="other") }}
+                    <div style="position: relative;">
+                        {{ form.other(class="form-control number-input", type="number", step="0.01", min="0", id="other", placeholder=translations['e.g. ₦20,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="other"></span>
+                        <span class="info-icon" aria-label="Other Expenses Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Internet, clothes, or other spending.'] }}</span>
+                        </span>
+                    </div>
+                    <div class="valid-feedback">{{ translations['Valid amount!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Number'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form.auto_email(class="form-check-input", id="auto_email") }}
+                        {{ form.auto_email.label(class="form-check-label", for="auto_email") }}
+                        <span class="info-icon" aria-label="Auto Email Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Get your budget report by email.'] }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="budget-preview" id="budget-preview" style="display: none;">
+                    <p>{{ translations['Budget Surplus/Deficit'] }}: <span class="budget-value {{ 'deficit' if surplus_deficit < 0 else '' }}" id="budget-amount">0</span></p>
+                    <ul class="advice-list" id="budget-advice" style="display: none;"></ul>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['Start Planning Your Budget!'] }}</button>
+                </div>
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner"></i> {{ translations['Planning your budget...'] }}
+                </div>
+            </form>
+        </div>
+
+        <footer class="mt-4 text-center">
+            <p>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ translations['Home'] }}</a>
+            </p>
+            <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
+            <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
+            <p><a href="{{ WAITLIST_FORM_URL }}" target="_blank">{{ translations['Join Waitlist'] }}</a></p>
+            <p><a href="{{ CONSULTANCY_FORM_URL }}" target="_blank">{{ translations['Book Consultancy'] }}</a></p>
+            <p>© 2025 Ficore Africa. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        // Real-time validation for non-numeric inputs
+        document.querySelectorAll('input:not([type="number"]), select').forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.required) {
+                    if (input.type === 'email') {
+                        const emailInput = document.getElementById('email');
+                        const confirmEmailInput = document.getElementById('confirm_email');
+                        if (input.id === 'email' || input.id === 'confirm_email') {
+                            if (input.value.match(/^\S+@\S+\.\S+$/)) {
+                                if (emailInput.value === confirmEmailInput.value && emailInput.value) {
+                                    emailInput.classList.remove('is-invalid');
+                                    emailInput.classList.add('is-valid');
+                                    confirmEmailInput.classList.remove('is-invalid');
+                                    confirmEmailInput.classList.add('is-valid');
+                                } else {
+                                    emailInput.classList.remove('is-valid');
+                                    emailInput.classList.add('is-invalid');
+                                    confirmEmailInput.classList.remove('is-valid');
+                                    confirmEmailInput.classList.add('is-invalid');
+                                }
+                            } else {
+                                input.classList.remove('is-valid');
+                                input.classList.add('is-invalid');
+                            }
+                        }
+                    } else if (input.value) {
+                        input.classList.remove('is-invalid');
+                        input.classList.add('is-valid');
+                    } else {
+                        input.classList.remove('is-valid');
+                        input.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+
+        // Format number with commas for display
+        function formatNumber(value) {
+            if (!value && value !== 0) return '0.00';
+            const parts = parseFloat(value).toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.join('.');
+        }
+
+        // Handle numeric inputs for display formatting and budget preview
+        document.querySelectorAll('.number-input').forEach(input => {
+            const displayElement = input.parentElement.querySelector('.number-display[data-for="' + input.id + '"]');
+            const budgetPreview = document.getElementById('budget-preview');
+            const budgetAmount = document.getElementById('budget-amount');
+            const adviceList = document.getElementById('budget-advice');
+
+            function updateDisplay() {
+                let value = parseFloat(input.value) || 0;
+                let max = parseFloat(input.max) || Infinity;
+                let min = parseFloat(input.min) || 0;
+
+                // Validate and adjust value
+                if (value > max) {
+                    value = max;
+                    input.value = max;
+                    input.classList.add('is-invalid');
+                } else if (value < min) {
+                    value = min;
+                    input.value = min;
+                    input.classList.add('is-invalid');
+                } else if (input.required && !input.value) {
+                    input.classList.add('is-invalid');
+                    displayElement.textContent = '';
+                } else {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                }
+
+                // Update display with formatted value
+                displayElement.textContent = '₦' + formatNumber(value);
+
+                // Update budget preview
+                const income = parseFloat(document.getElementById('income').value) || 0;
+                const housing = parseFloat(document.getElementById('housing').value) || 0;
+                const food = parseFloat(document.getElementById('food').value) || 0;
+                const transport = parseFloat(document.getElementById('transport').value) || 0;
+                const other = parseFloat(document.getElementById('other').value) || 0;
+                const totalExpenses = housing + food + transport + other;
+                const savings = Math.max(0, income * 0.1);
+                const surplusDeficit = income - totalExpenses - savings;
+
+                // Update surplus/deficit
+                if (income > 0 || totalExpenses > 0) {
+                    budgetAmount.textContent = '₦' + formatNumber(surplusDeficit);
+                    budgetAmount.className = 'budget-value' + (surplusDeficit < 0 ? ' deficit' : '');
+                    budgetPreview.style.display = 'block';
+                } else {
+                    budgetPreview.style.display = 'none';
+                }
+
+                // Update advice
+                adviceList.innerHTML = '';
+                let adviceItems = [];
+                if (surplusDeficit >= 0) {
+                    adviceItems.push("{{ translations['Great job! Save or invest your surplus to grow your wealth.'] }}");
+                    if (housing > income * 0.4) {
+                        adviceItems.push("{{ translations['Housing costs are high. Look for cheaper rent or utilities.'] }}");
+                    }
+                    if (food > income * 0.3) {
+                        adviceItems.push("{{ translations['Food spending is high. Try cooking at home more.'] }}");
+                    }
+                } else {
+                    adviceItems.push("{{ translations['Reduce non-essential spending to balance your budget.'] }}");
+                    if (housing > income * 0.4) {
+                        adviceItems.push("{{ translations['Housing costs are high. Look for cheaper rent or utilities.'] }}");
+                    }
+                    if (food > income * 0.3) {
+                        adviceItems.push("{{ translations['Food spending is high. Try cooking at home more.'] }}");
+                    }
+                    if (other > income * 0.2) {
+                        adviceItems.push("{{ translations['Other spending is high. Cut back on non-essentials like clothes or entertainment.'] }}");
+                    }
+                }
+
+                if (adviceItems.length > 0) {
+                    adviceItems.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        adviceList.appendChild(li);
+                    });
+                    adviceList.style.display = 'block';
+                } else {
+                    adviceList.style.display = 'none';
+                }
+            }
+
+            // Initialize display
+            updateDisplay();
+
+            // Handle input event
+            input.addEventListener('input', () => {
+                updateDisplay();
+            });
+
+            // Handle blur event
+            input.addEventListener('blur', () => {
+                if (!input.value && !input.required) {
+                    input.classList.remove('is-valid', 'is-invalid');
+                    displayElement.textContent = '';
+                    budgetPreview.style.display = 'none';
+                    adviceList.style.display = 'none';
+                    return;
+                }
+                updateDisplay();
+            });
+
+            // Handle focus to clear display for typing
+            input.addEventListener('focus', () => {
+                displayElement.textContent = '';
+            });
+        });
+
+        // Loading spinner
+        document.getElementById('submission-form').addEventListener('submit', function(e) {
+            // Ensure numeric inputs have raw values
+            document.querySelectorAll('.number-input').forEach(input => {
+                if (input.value) {
+                    input.value = parseFloat(input.value) || 0;
+                }
+            });
+            document.querySelector('.loading-spinner').style.display = 'block';
+            document.getElementById('submit-btn').disabled = true;
+        });
+    </script>
+</body>
+</html>

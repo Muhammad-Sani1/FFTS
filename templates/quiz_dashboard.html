@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View your financial quiz results with Ficore Africa and share your achievements.">
+    <meta name="keywords" content="ficore africa, quiz dashboard, financial literacy, Africa SME finance">
+    <meta name="author" content="Ficore Africa">
+    <title>{{ translations['Quiz Dashboard'] }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #1E7F71;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            color: #FFFFFF;
+            margin: 0;
+        }
+        .header p {
+            font-style: italic;
+            color: #E0F7FA;
+            font-size: 0.9rem;
+            margin: 5px 0 0 0;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+        }
+        h3 {
+            color: #2E7D32;
+            font-weight: 600;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        li strong {
+            display: inline-block;
+            width: 120px;
+        }
+        .badge {
+            display: inline-block;
+            background: #42A5F5;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9rem;
+        }
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .course-link {
+            background-color: #FBC02D;
+            color: #333;
+        }
+        .feedback-link {
+            background-color: #2E7D32;
+            color: white;
+        }
+        .waitlist-link {
+            background-color: #0288D1;
+            color: white;
+        }
+        .consultancy-link {
+            background-color: #D81B60;
+            color: white;
+        }
+        .share-button {
+            background: linear-gradient(135deg, #FF5722, #D81B60);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 500;
+            border-radius: 8px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>{{ translations['Quiz Dashboard'] }}</h2>
+            <p>{{ translations['Financial growth passport for Africa'] }}</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <h3>{{ translations['Welcome'] }}, {{ first_name }}!</h3>
+            <p>{{ translations['Your Quiz Summary'] }}</p>
+            <ul>
+                <li><strong>{{ translations['Score'] }}:</strong> {{ score }}%</li>
+                <li><strong>{{ translations['Advice'] }}:</strong> {{ quiz_description }}</li>
+                <li><strong>{{ translations['Rank'] }}:</strong> #{{ rank }} {{ translations['out of'] }} {{ total_users }} {{ translations['users'] }}</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>{{ translations['Your Badges'] }}</h3>
+            {% if badges %}
+                {% for badge in badges %}
+                    <span class="badge">{{ translations.get(badge, badge) }}</span>
+                {% endfor %}
+            {% else %}
+                <p>{{ translations['No Badges Yet'] }}</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h3>{{ translations['Quick Tips'] }}</h3>
+            <ul>
+                {% if score >= 60 %}
+                    <li>{{ translations['Great job! Keep learning about money.'] }}</li>
+                    <li>{{ translations['Share your knowledge with friends.'] }}</li>
+                {% else %}
+                    <li>{{ translations['Learn more about saving and spending wisely.'] }}</li>
+                    <li>{{ translations['Try the quiz again to improve your score.'] }}</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>{{ translations['Recommended Learning'] }}</h3>
+            <a href="{{ course_url }}" class="course-link">{{ course_title }}</a>
+        </div>
+
+        <div class="card">
+            <h3>{{ translations['Whats Next'] }}</h3>
+            <p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">{{ translations['Back to Home'] }}</a>
+                <a href="{{ FEEDBACK_FORM_URL }}" class="feedback-link">{{ translations['Provide Feedback'] }}</a>
+                <a href="{{ WAITLIST_FORM_URL }}" class="waitlist-link">{{ translations['Join Waitlist'] }}</a>
+                <a href="{{ CONSULTANCY_FORM_URL }}" class="consultancy-link">{{ translations['Book Consultancy'] }}</a>
+                <button class="share-button" id="share-button">{{ translations['Share Your Results'] }}</button>
+            </p>
+            <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
+            <p>© 2025 Ficore Africa. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        document.getElementById('share-button').addEventListener('click', function () {
+            const score = {{ score | tojson }};
+            const rank = {{ rank | tojson }};
+            const totalUsers = {{ total_users | tojson }};
+            const shareText = `${translations['My Quiz Score']}: ${score}%\n${translations['Rank']}: #${rank} ${translations['out of']}: ${totalUsers}\n${translations['Check yours at']}: ${window.location.origin}`;
+            const shareData = {
+                title: translations['My Quiz Results'],
+                text: shareText,
+                url: window.location.origin
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => console.log('Shared successfully'))
+                    .catch((error) => console.error('Error sharing:', error));
+            } else {
+                navigator.clipboard.writeText(shareText)
+                    .then(() => {
+                        alert(translations['Results copied to clipboard']);
+                    })
+                    .catch((error) => {
+                        console.error('Error copying to clipboard:', error);
+                        alert(translations['Failed to copy results']);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

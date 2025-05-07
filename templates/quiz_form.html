@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Discover your financial personality with Ficore Africa's quiz and get personalized insights.">
+    <meta name="keywords" content="ficore africa, financial personality quiz, financial literacy, Africa SME finance">
+    <meta name="author" content="Ficore Africa">
+    <title>{{ translations['Financial Personality Quiz'] }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD, #F5F7FA);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .header {
+            background: #1E7F71;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header h2 {
+            color: #FFFFFF;
+            margin: 0;
+        }
+        .header p {
+            font-style: italic;
+            color: #E0F7FA;
+            font-size: 0.9rem;
+            margin: 5px 0 0 0;
+        }
+        .form-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-5px);
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            color: #0288D1;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-control, .form-select {
+            border: 2px solid #0288D1;
+            border-radius: 8px;
+            padding: 10px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            min-height: 48px;
+            font-size: 1rem;
+            width: 100%;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #2E7D32;
+            box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+            outline: none;
+        }
+        .form-control:invalid, .form-select:invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            min-width: 120px;
+            min-height: 48px;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #1B5E20, #01579B);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            border: 1px solid #4CAF50;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        .btn-primary:hover::after {
+            width: 200px;
+            height: 200px;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 120px;
+            min-height: 48px;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+        .info-icon {
+            cursor: pointer;
+            color: #0288D1;
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+        .info-icon:hover {
+            color: #2E7D32;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .info-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .valid-feedback {
+            color: #28a745;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .form-control.is-valid ~ .valid-feedback, .form-select.is-valid ~ .valid-feedback {
+            display: block;
+        }
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+        .form-control.is-valid, .form-select.is-valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        .loading-spinner {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .loading-spinner i {
+            font-size: 1.5rem;
+            color: #2E7D32;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 576px) {
+            .container {
+                padding: 10px;
+            }
+            .form-card {
+                padding: 1rem;
+            }
+            .btn-primary, .btn-secondary {
+                font-size: 1rem;
+                padding: 10px 20px;
+            }
+            .form-control, .form-select {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>{{ translations['Financial Personality Quiz'] }}</h2>
+            <p>{{ translations['Financial growth passport for Africa'] }}</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-card">
+            <h3>{{ translations['Discover Your Financial Style'] }}</h3>
+            <p>{{ translations['Answer each question with Yes or No.'] }}</p>
+            <form method="POST" id="submission-form" action="{{ url_for('quiz_form') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.first_name.label(class="form-label", for="first_name") }}
+                    {{ form.first_name(class="form-control", id="first_name", placeholder=translations['Enter your first name'], required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="First Name Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter your first name to personalize your results.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['First Name Required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.email.label(class="form-label", for="email") }}
+                    {{ form.email(class="form-control", id="email", placeholder=translations['Enter your email'], required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="Email Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Provide your email address to receive your results and personalized tips.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Invalid Email'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.language.label(class="form-label", for="language") }}
+                    {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true'}) }}
+                    <span class="info-icon" aria-label="Language Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Choose your preferred language for the quiz.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Language selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Language required'] }}</div>
+                </div>
+
+                {% for i in range(1, 11) %}
+                    <div class="form-group">
+                        {{ form['q' + i|string].label(class="form-label", for="q{{ i }}") }}
+                        {{ form['q' + i|string](class="form-select", id="q{{ i }}", required=True, **{'aria-required': 'true'}) }}
+                        <span class="info-icon" aria-label="Question {{ i }} Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Answer each question with Yes or No based on your financial habits.'] }}</span>
+                        </span>
+                        <div class="valid-feedback">{{ translations['Selection made!'] }}</div>
+                        <div class="invalid-feedback">{{ translations['Please select an option'] }}</div>
+                    </div>
+                {% endfor %}
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['Uncover Your Financial Style'] }}</button>
+                </div>
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner"></i> {{ translations['Analyzing your answers...'] }}
+                </div>
+            </form>
+        </div>
+
+        <footer class="mt-4 text-center">
+            <p>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ translations['Home'] }}</a>
+                <a href="{{ url_for('quiz_dashboard') }}" class="btn btn-secondary">{{ translations['Dashboard'] }}</a>
+            </p>
+            <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
+            <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
+            <p>© 2025 Ficore Africa. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        // Randomize questions
+        const questions = [
+            "{{ translations['Do you save some money every month?'] }}",
+            "{{ translations['Do you know how much you spend each week?'] }}",
+            "{{ translations['Do you like to plan before spending money?'] }}",
+            "{{ translations['Do you keep money for emergencies?'] }}",
+            "{{ translations['Do you check your money goals often?'] }}",
+            "{{ translations['Do you avoid borrowing money when possible?'] }}",
+            "{{ translations['Do you feel okay taking small money risks?'] }}",
+            "{{ translations['Do you learn about saving or investing?'] }}",
+            "{{ translations['Do you spend less than you earn?'] }}",
+            "{{ translations['Do you talk about money with family or friends?'] }}"
+        ];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        const labels = document.querySelectorAll('.form-label[for^="q"]');
+        const shuffledQuestions = shuffle([...questions]);
+        labels.forEach((label, index) => {
+            label.textContent = shuffledQuestions[index];
+        });
+
+        // Real-time validation
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.required) {
+                    if (input.type === 'email') {
+                        if (input.value.match(/^\S+@\S+\.\S+$/)) {
+                            input.classList.remove('is-invalid');
+                            input.classList.add('is-valid');
+                        } else {
+                            input.classList.remove('is-valid');
+                            input.classList.add('is-invalid');
+                        }
+                    } else if (input.value) {
+                        input.classList.remove('is-invalid');
+                        input.classList.add('is-valid');
+                    } else {
+                        input.classList.remove('is-valid');
+                        input.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+
+        // Loading spinner
+        document.getElementById('submission-form').addEventListener('submit', function() {
+            document.querySelector('.loading-spinner').style.display = 'block';
+            document.getElementById('submit-btn').disabled = true;
+        });
+    </script>
+</body>
+</html>

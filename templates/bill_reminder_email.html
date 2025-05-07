@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations['Bill Payment Reminder'] }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #1E7F71; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+        <h2 style="color: #FFFFFF; margin: 0;">{{ translations['Bill Payment Reminder'] }}</h2>
+        <p style="font-style: italic; color: #E0F7FA; font-size: 0.9rem; margin: 5px 0 0 0;">
+            {{ translations['Financial growth passport for Africa'] }}
+        </p>
+    </div>
+    <p>{{ translations['Dear'] }} {{ user_name }},</p>
+    <p>{{ translations['This is a reminder about your upcoming or overdue bills.'] }}</p>
+    <p>{{ translations['Please review the following bills'] }}:</p>
+    <ul>
+    {% for bill in bills %}
+        {% if bill.Status == 'Pending' or bill.Status == 'Overdue' %}
+            <li>{{ bill.Description }} - {{ bill.Amount }} ₦ ({{ translations['Due'] }}: {{ bill.DueDate }}, {{ translations['Status'] }}: {{ translations[bill.Status] }})</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+    <p>{{ translations['Pay on time to avoid late fees.'] }}</p>
+    <p style="margin-bottom: 10px;">
+        {{ translations['Manage your bills now'] }}:
+        <a href="{{ url_for('bill_planner_form', _external=True) }}" style="display: inline-block; padding: 10px 20px; background-color: #FBC02D; color: #333; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">{{ translations['Go to Bill Planner'] }}</a>
+    </p>
+    <p style="margin-bottom: 10px;">
+        {{ translations['Please provide feedback on your experience'] }}:
+        <a href="{{ FEEDBACK_FORM_URL }}" style="display: inline-block; padding: 10px 20px; background-color: #2E7D32; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">{{ translations['Feedback Form'] }}</a>
+    </p>
+    <p style="margin-bottom: 10px;">
+        {{ translations['Want Smart Insights? Join our waitlist'] }}:
+        <a href="{{ WAITLIST_FORM_URL }}" style="display: inline-block; padding: 10px 20px; background-color: #0288D1; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">{{ translations['Join Waitlist'] }}</a>
+    </p>
+    <p style="margin-bottom: 10px;">
+        {{ translations['Need expert advice? Book a consultancy'] }}:
+        <a href="{{ CONSULTANCY_FORM_URL }}" style="display: inline-block; padding: 10px 20px; background-color: #D81B60; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">{{ translations['Book Consultancy'] }}</a>
+    </p>
+    <p>{{ translations['Thank you for choosing Ficore Africa'] }}!</p>
+    <p style="font-size: 0.8rem; color: #666; margin-top: 20px;">
+        © 2025 Ficore Africa. All rights reserved.
+    </p>
+</body>
+</html>
