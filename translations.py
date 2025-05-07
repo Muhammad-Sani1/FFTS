@@ -21,6 +21,14 @@ translations = {
         'Early Adopter': 'Early Adopter',
         'Budget Master': 'Budget Master',
         'Saver': 'Saver',
+        'Strategist': 'Strategist',
+        'Planner': 'Planner',
+        'Learner': 'Learner',
+        'Failed to store authentication data': 'Failed to store authentication data',
+        'Personal Finance 101': 'Personal Finance 101',
+        'Financial Stability Achieved!': 'Financial Stability Achieved!',
+        'Debt Slayer!': 'Debt Slayer!',
+        'First Health Score Completed!': 'First Health Score Completed!',
         'Balanced Budget': 'Balanced Budget',
         'Your ranking': 'Your ranking',
         'Earned badges': 'Earned badges',
@@ -1317,6 +1325,14 @@ translations = {
         'record_id.aria-label': 'Select a previous record',
         'record_id.data-tooltip': 'Choose a previous form you filled to edit it, or select "Create New Record" for a new one.',
         'submit.label': 'Submit',
-        'submit.aria-label': 'Submit your financial information'      
+        'submit.aria-label': 'Submit your financial information',
+        'Strategist': 'Strategist',
+        'Planner': 'Planner',
+        'Learner': 'Learner',
+        'Failed to store authentication data': 'Failed to store authentication data',
+        'Personal Finance 101': 'Personal Finance 101',
+        'Financial Stability Achieved!': 'Financial Stability Achieved!',
+        'Debt Slayer!': 'Debt Slayer!',
+        'First Health Score Completed!': 'First Health Score Completed!'
     }
 }
