@@ -44,11 +44,15 @@ if not app_secret_key:
     logger.error("FLASK_SECRET_KEY environment variable not set")
     sys.exit(1)
 app.secret_key = app_secret_key
+app.config['SESSION_TYPE'] = 'redis'  # Use Redis for sessions
+app.config['SESSION_REDIS'] = redis.Redis.from_url(os.environ.get('CELERY_BROKER_URL'), decode_responses=True)
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
 app.config['WTF_CSRF_ENABLED'] = True
+app.config['SESSION_USE_SIGNER'] = True  # Sign session cookies
+Session(app)  # Initialize Flask-Session
 
 # Configure Flask-Caching
 cache_config = {
@@ -1223,9 +1227,9 @@ def health_score_form():
                 language=form.language.data
             )
         
+        # Store minimal session data
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['first_name'] = form.first_name.data
         session['session_id'] = session.get('session_id', str(uuid.uuid4()))
         
         auth_data = {
@@ -1298,27 +1302,12 @@ def health_score_form():
             except Exception as e:
                 flash(get_translation('Error sending email. Your score is still saved.', form.language.data), 'warning')
         
-        try:
-            chart_html, comparison_chart_html = generate_health_score_charts(
-                income,
-                debt,
-                health_score,
-                get_average_health_score(),
-                form.language.data
-            )
-        except Exception as e:
-            flash(get_translation('Error generating charts. Your score is still available.', form.language.data), 'warning')
-            chart_html = comparison_chart_html = ''
+        # Store only the timestamp to retrieve data later
+        session['health_score_timestamp'] = user_data['Timestamp']
         
-        session['health_score_data'] = {
-            'user_data': user_data,
-            'chart_html': chart_html,
-            'comparison_chart_html': comparison_chart_html,
-            'score_description': score_description,
-            'rank': rank,
-            'total_users': total_users,
-            'badges': badges
-        }
+        # Clear unnecessary session keys
+        session.pop('health_score_data', None)
+        session.pop('first_name', None)
         
         return redirect(url_for('health_score_dashboard'))
     
@@ -1331,27 +1320,54 @@ def health_score_form():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/health_score_dashboard')
 def health_score_dashboard():
     language = session.get('language', 'English')
-    data = session.get('health_score_data', {})
+    user_email = session.get('user_email', '')
+    timestamp = session.get('health_score_timestamp', '')
     
     # Validate dashboard access
-    if not data.get('user_data', {}).get('FirstName'):
+    if not user_email or not timestamp:
         flash(get_translation('Invalid dashboard access. Please complete the form.', language), 'danger')
         return redirect(url_for('health_score_form'))
+    
+    # Retrieve data from Google Sheets
+    user_data = get_record_by_id(timestamp, 'HealthScore')
+    if not user_data or user_data.get('Email') != user_email:
+        flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
+        return redirect(url_for('health_score_form'))
+    
+    # Recalculate necessary data
+    income = parse_number(user_data.get('IncomeRevenue', 0))
+    debt = parse_number(user_data.get('DebtLoan', 0))
+    health_score = parse_number(user_data.get('Score', 0))
+    score_description = get_score_description(health_score, language)
+    rank, total_users = assign_rank(health_score)
+    badges = user_data.get('Badges', '').split(',') if user_data.get('Badges') else []
+    
+    # Generate charts
+    try:
+        chart_html, comparison_chart_html = generate_health_score_charts(
+            income,
+            debt,
+            health_score,
+            get_average_health_score(),
+            language
+        )
+    except Exception as e:
+        flash(get_translation('Error generating charts. Your score is still available.', language), 'warning')
+        chart_html = comparison_chart_html = ''
     
     return render_template(
         'health_score_dashboard.html',
         tool='Financial Health Score',
-        user_data=data.get('user_data', {}),
-        chart_html=data.get('chart_html', ''),
-        comparison_chart_html=data.get('comparison_chart_html', ''),
-        score_description=data.get('score_description', ''),
-        rank=data.get('rank', '1'),
-        total_users=data.get('total_users', '1'),
-        badges=data.get('badges', []),
+        user_data=user_data,
+        chart_html=chart_html,
+        comparison_chart_html=comparison_chart_html,
+        score_description=score_description,
+        rank=rank,
+        total_users=total_users,
+        badges=badges,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
@@ -1360,7 +1376,6 @@ def health_score_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/net_worth_form', methods=['GET', 'POST'])
 def net_worth_form():
     language = session.get('language', 'English')
