@@ -29,3 +29,4 @@ python-dotenv==1.1.0  # Latest as of March 2024
 
 # Deployment
 gunicorn==23.0.0  # Latest as of March 2024; assuming stable
+Flask-Session==0.8.0
