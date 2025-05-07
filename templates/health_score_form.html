@@ -404,8 +404,8 @@
                                 <div class="valid-feedback">{{ translations[language]['User Type selected!'] }}</div>
                             </div>
                             <div class="text-center">
-                                <button type="button" class="btn btn-secondary prev-step">{{ translations[language]['Previous'] }}</button>
-                                <button type="button" class="btn btn-primary next-step">{{ translations[language]['Next'] }}</button>
+                                <button type="button" class="btn btn-secondary prev-step">{{ translations[language]['Previous'] | default('Previou') }}</button>
+                                <button type="button" class="btn btn-primary next-step">{{ translations[language]['Next'] | default('Next') }}</button>
                             </div>
                         </div>
 
