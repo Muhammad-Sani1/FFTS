@@ -3,6 +3,7 @@ import sys
 import uuid
 import json
 import logging
+from time import sleep
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from flask_wtf import FlaskForm
@@ -101,24 +102,39 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize Flask-Mail: {str(e)}")
     
-# Initialize Google Sheets client with google-auth
+logger = logging.getLogger(__name__)
 scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
 sheets = None
-try:
-    creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
-    if not creds_json:
-        logger.error("GOOGLE_CREDENTIALS_JSON environment variable not set")
-    else:
-        creds_dict = json.loads(creds_json)
-        creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-        client = gspread.authorize(creds)
-        sheets = client.open_by_key('13hbiMTMRBHo9MHjWwcugngY_aSiuxII67HCf03MiZ8I')
-except json.JSONDecodeError as e:
-    logger.error(f"Invalid GOOGLE_CREDENTIALS_JSON format: {e}")
-except gspread.exceptions.APIError as e:
-    logger.error(f"Google Sheets API error: {e}")
-except Exception as e:
-    logger.error(f"Failed to initialize Google Sheets: {e}")
+
+def initialize_sheets(max_retries=3, backoff_factor=2):
+    global sheets
+    for attempt in range(max_retries):
+        try:
+            creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+            if not creds_json:
+                logger.error("GOOGLE_CREDENTIALS_JSON environment variable not set")
+                return
+            creds_dict = json.loads(creds_json)
+            creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+            client = gspread.authorize(creds)
+            sheets = client.open_by_key('13hbiMTMRBHo9MHjWwcugngY_aSiuxII67HCf03MiZ8I')
+            logger.info("Successfully initialized Google Sheets")
+            return
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid GOOGLE_CREDENTIALS_JSON format: {e}")
+            return
+        except gspread.exceptions.APIError as e:
+            logger.error(f"Google Sheets API error: {e}")
+            return
+        except Exception as e:
+            logger.error(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                sleep(backoff_factor ** attempt)
+            else:
+                logger.error("Max retries exceeded")
+                return
+
+initialize_sheets()
 
 # Define worksheet configurations
 WORKSHEETS = {
