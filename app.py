@@ -2281,9 +2281,25 @@ def internal_server_error(e):
         language=language
     ), 500
 
-# Redis connection cleanup
-redis_client = redis.Redis.from_url(celery_broker_url)
-atexit.register(lambda: redis_client.close())
+# Redis connection with error handling
+try:
+    logger.info(f"Attempting to connect to Redis with broker URL: {celery_broker_url}")
+    redis_client = redis.Redis.from_url(celery_broker_url, decode_responses=True)
+except ValueError as e:
+    logger.error(f"Invalid Redis URL: {e}. Please check CELERY_BROKER_URL in environment variables.")
+    redis_client = None
+except redis.RedisError as e:
+    logger.error(f"Failed to connect to Redis: {e}")
+    redis_client = None
+finally:
+    if redis_client:
+        logger.info("Redis client initialized successfully.")
+    else:
+        logger.warning("Redis client is not initialized. Celery tasks may not work.")
+
+# Register cleanup for Redis connection
+if redis_client:
+    atexit.register(lambda: redis_client.close())
 
 if __name__ == '__main__':
     app.run(debug=False)
