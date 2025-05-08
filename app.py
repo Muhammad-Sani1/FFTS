@@ -1935,7 +1935,7 @@ chart_html = generate_budget_charts(monthly_income, housing_expenses, food_expen
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
+# Expense Tracker Form route (already provided but included for completeness)
 @app.route('/expense_tracker_form', methods=['GET', 'POST'])
 def expense_tracker_form():
     language = session.get('language', 'English')
@@ -1970,14 +1970,14 @@ def expense_tracker_form():
             return render_template('expense_tracker_form.html', form=form, translations=translations.get(form.language.data, translations['English']), language=form.language.data)
         session['language'] = form.language.data
         session['user_email'] = form.email.data
-        session['session_id'] = session.get('session_id', str(uuid.uuid4()))
+        session['session_id'] = session.get('session_id', str(uuid4()))
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
             'language': form.language.data
         }
         store_authentication_data(auth_data)
-        transaction_id = form.record_id.data or str(uuid.uuid4())
+        transaction_id = form.record_id.data or str(uuid4())
         user_data = {
             'id': transaction_id,
             'email': form.email.data,
@@ -2032,6 +2032,7 @@ def expense_tracker_form():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
+# Expense Tracker Dashboard route (already provided but included for completeness)
 @app.route('/expense_tracker_dashboard')
 def expense_tracker_dashboard():
     language = session.get('language', 'English')
@@ -2054,6 +2055,35 @@ def expense_tracker_dashboard():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
+# Delete Transaction route (already provided but included for completeness)
+@app.route('/delete_transaction/<transaction_id>', methods=['POST'])
+def delete_transaction(transaction_id):
+    language = session.get('language', 'English')
+    email = session.get('user_email')
+    if not email:
+        flash(get_translation('Please log in to perform this action', language), 'warning')
+        return redirect(url_for('index'))
+    transaction = get_record_by_id(transaction_id, 'ExpenseTracker')
+    if not transaction or transaction.get('email') != email:
+        flash(get_translation('Transaction not found or unauthorized', language), 'error')
+        return redirect(url_for('expense_tracker_dashboard'))
+    try:
+        sheet = initialize_worksheet('ExpenseTracker')
+        if sheet is None:
+            flash(get_translation('Failed to delete transaction due to Google Sheets error', language), 'error')
+            return redirect(url_for('expense_tracker_dashboard'))
+        records = sheet.get_all_records()
+        for i, record in enumerate(records, start=2):
+            if record.get('id') == transaction_id:
+                sheet.delete_rows(i)
+                break
+        calculate_running_balance(email)
+        flash(get_translation('Transaction deleted successfully', language), 'success')
+    except Exception as e:
+        logger.error(f"Error deleting transaction: {e}")
+        flash(get_translation('Failed to delete transaction', language), 'error')
+    return redirect(url_for('expense_tracker_dashboard'))
+    
 @app.route('/bill_planner_form', methods=['GET', 'POST'])
 def bill_planner_form():
     language = session.get('language', 'English')
