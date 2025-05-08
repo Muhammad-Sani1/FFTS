@@ -328,10 +328,10 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.income.label(class="form-label", for="income") }}
+                    {{ form.monthly_income.label(class="form-label", for="monthly_income") }}
                     <div style="position: relative;">
-                        {{ form.income(class="form-control number-input", type="number", step="0.01", min="0", id="income", placeholder=translations['e.g. ₦150,000'], required=True, **{'aria-required': 'true'}) }}
-                        <span class="number-display" data-for="income"></span>
+                        {{ form.monthly_income(class="form-control number-input", type="number", step="0.01", min="0", id="monthly_income", placeholder=translations['e.g. ₦150,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="monthly_income"></span>
                         <span class="info-icon" aria-label="Monthly Income Info">
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">{{ translations['Your monthly pay or income.'] }}</span>
@@ -342,10 +342,10 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.housing.label(class="form-label", for="housing") }}
+                    {{ form.housing_expenses.label(class="form-label", for="housing_expenses") }}
                     <div style="position: relative;">
-                        {{ form.housing(class="form-control number-input", type="number", step="0.01", min="0", id="housing", placeholder=translations['e.g. ₦30,000'], required=True, **{'aria-required': 'true'}) }}
-                        <span class="number-display" data-for="housing"></span>
+                        {{ form.housing_expenses(class="form-control number-input", type="number", step="0.01", min="0", id="housing_expenses", placeholder=translations['e.g. ₦30,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="housing_expenses"></span>
                         <span class="info-icon" aria-label="Housing Expenses Info">
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">{{ translations['Rent, electricity, or water bills.'] }}</span>
@@ -356,10 +356,10 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.food.label(class="form-label", for="food") }}
+                    {{ form.food_expenses.label(class="form-label", for="food_expenses") }}
                     <div style="position: relative;">
-                        {{ form.food(class="form-control number-input", type="number", step="0.01", min="0", id="food", placeholder=translations['e.g. ₦45,000'], required=True, **{'aria-required': 'true'}) }}
-                        <span class="number-display" data-for="food"></span>
+                        {{ form.food_expenses(class="form-control number-input", type="number", step="0.01", min="0", id="food_expenses", placeholder=translations['e.g. ₦45,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="food_expenses"></span>
                         <span class="info-icon" aria-label="Food Expenses Info">
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">{{ translations['Money spent on food each month.'] }}</span>
@@ -370,10 +370,10 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.transport.label(class="form-label", for="transport") }}
+                    {{ form.transport_expenses.label(class="form-label", for="transport_expenses") }}
                     <div style="position: relative;">
-                        {{ form.transport(class="form-control number-input", type="number", step="0.01", min="0", id="transport", placeholder=translations['e.g. ₦10,000'], required=True, **{'aria-required': 'true'}) }}
-                        <span class="number-display" data-for="transport"></span>
+                        {{ form.transport_expenses(class="form-control number-input", type="number", step="0.01", min="0", id="transport_expenses", placeholder=translations['e.g. ₦10,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="transport_expenses"></span>
                         <span class="info-icon" aria-label="Transport Expenses Info">
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">{{ translations['Bus, bike, taxi, or fuel costs.'] }}</span>
@@ -384,10 +384,10 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.other.label(class="form-label", for="other") }}
+                    {{ form.other_expenses.label(class="form-label", for="other_expenses") }}
                     <div style="position: relative;">
-                        {{ form.other(class="form-control number-input", type="number", step="0.01", min="0", id="other", placeholder=translations['e.g. ₦20,000'], required=True, **{'aria-required': 'true'}) }}
-                        <span class="number-display" data-for="other"></span>
+                        {{ form.other_expenses(class="form-control number-input", type="number", step="0.01", min="0", id="other_expenses", placeholder=translations['e.g. ₦20,000'], required=True, **{'aria-required': 'true'}) }}
+                        <span class="number-display" data-for="other_expenses"></span>
                         <span class="info-icon" aria-label="Other Expenses Info">
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">{{ translations['Internet, clothes, or other spending.'] }}</span>
@@ -513,17 +513,17 @@
                 displayElement.textContent = '₦' + formatNumber(value);
 
                 // Update budget preview
-                const income = parseFloat(document.getElementById('income').value) || 0;
-                const housing = parseFloat(document.getElementById('housing').value) || 0;
-                const food = parseFloat(document.getElementById('food').value) || 0;
-                const transport = parseFloat(document.getElementById('transport').value) || 0;
-                const other = parseFloat(document.getElementById('other').value) || 0;
-                const totalExpenses = housing + food + transport + other;
-                const savings = Math.max(0, income * 0.1);
-                const surplusDeficit = income - totalExpenses - savings;
+                const monthly_income = parseFloat(document.getElementById('monthly_income').value) || 0;
+                const housing_expenses = parseFloat(document.getElementById('housing_expenses').value) || 0;
+                const food_expenses = parseFloat(document.getElementById('food_expenses').value) || 0;
+                const transport_expenses = parseFloat(document.getElementById('transport_expenses').value) || 0;
+                const other_expenses = parseFloat(document.getElementById('other_expenses').value) || 0;
+                const totalExpenses = housing_expenses + food_expenses + transport_expenses + other_expenses;
+                const savings = Math.max(0, monthly_income * 0.2); // Updated to 20% as per Routes Fields
+                const surplusDeficit = monthly_income - totalExpenses - savings;
 
                 // Update surplus/deficit
-                if (income > 0 || totalExpenses > 0) {
+                if (monthly_income > 0 || totalExpenses > 0) {
                     budgetAmount.textContent = '₦' + formatNumber(surplusDeficit);
                     budgetAmount.className = 'budget-value' + (surplusDeficit < 0 ? ' deficit' : '');
                     budgetPreview.style.display = 'block';
@@ -536,21 +536,21 @@
                 let adviceItems = [];
                 if (surplusDeficit >= 0) {
                     adviceItems.push("{{ translations['Great job! Save or invest your surplus to grow your wealth.'] }}");
-                    if (housing > income * 0.4) {
+                    if (housing_expenses > monthly_income * 0.4) {
                         adviceItems.push("{{ translations['Housing costs are high. Look for cheaper rent or utilities.'] }}");
                     }
-                    if (food > income * 0.3) {
+                    if (food_expenses > monthly_income * 0.3) {
                         adviceItems.push("{{ translations['Food spending is high. Try cooking at home more.'] }}");
                     }
                 } else {
                     adviceItems.push("{{ translations['Reduce non-essential spending to balance your budget.'] }}");
-                    if (housing > income * 0.4) {
+                    if (housing_expenses > monthly_income * 0.4) {
                         adviceItems.push("{{ translations['Housing costs are high. Look for cheaper rent or utilities.'] }}");
                     }
-                    if (food > income * 0.3) {
+                    if (food_expenses > monthly_income * 0.3) {
                         adviceItems.push("{{ translations['Food spending is high. Try cooking at home more.'] }}");
                     }
-                    if (other > income * 0.2) {
+                    if (other_expenses > monthly_income * 0.2) {
                         adviceItems.push("{{ translations['Other spending is high. Cut back on non-essentials like clothes or entertainment.'] }}");
                     }
                 }
