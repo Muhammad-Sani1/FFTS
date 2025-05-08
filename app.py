@@ -18,6 +18,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
 from flask_caching import Cache
+from jinja2 import TemplateNotFound
 from translations import translations
 
 # Configure logging
@@ -576,7 +577,7 @@ class ExpenseTrackerForm(FlaskForm):
         self.category.label.text = t.get('Category', 'Category')
         self.transaction_type.label.text = t.get('Transaction Type', 'Transaction Type')
         self.date.label.text = t.get('Date', 'Date')
-        self.auto_email.label.text = t.get('Send Email Notification', потенция)
+        self.auto_email.label.text = t.get('Send Email Notification', 'Send Email Notification')
         self.record_id.label.text = t.get('Select Record to Edit', 'Select Record to Edit')
         self.submit.label.text = t.get('Add Transaction', 'Add Transaction')
         self.first_name.render_kw['data-tooltip'] = t.get('Enter your first name.', 'Enter your first name.')
@@ -1042,18 +1043,19 @@ def assign_budget_badges(surplus_deficit, language='English'):
 @app.route('/')
 def home():
     language = session.get('language', 'English')
-    return render_template('index.html', language=language, translations=translations.get(language, translations['English']))
+    try:
+        return render_template('index.html', language=language, translations=translations.get(language, translations['English']))
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
-@app.route('/change_language', methods=['POST'])
-def change_language():
+@app.route('/set_language', methods=['POST'])
+def set_language():
     language = request.form.get('language', 'English')
-    if language not in ['English', 'Hausa']:
-        language = 'English'
-        flash(get_translation('Invalid language selection', session.get('language', 'English')), 'error')
     session['language'] = language
-    flash(get_translation('Language changed successfully', language), 'success')
     return redirect(request.referrer or url_for('home'))
-    
+
 @app.route('/health_score', methods=['GET', 'POST'])
 def health_score_form():
     language = session.get('language', 'English')
@@ -1130,19 +1132,29 @@ def health_score_form():
                 translations=translations.get(language, translations['English'])
             )
             send_email_sync(subject, [form.email.data], html, language)
-        return render_template(
-            'health_score_result.html',
-            score=score,
-            description=get_score_description(score, language),
-            chart_html=chart_html,
-            comparison_chart_html=comparison_chart_html,
-            rank=rank,
-            total_users=total_users,
-            badges=badges,
-            language=language,
-            translations=translations.get(language, translations['English'])
-        )
-    return render_template('health_score.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        try:
+            return render_template(
+                'health_score_result.html',
+                score=score,
+                description=get_score_description(score, language),
+                chart_html=chart_html,
+                comparison_chart_html=comparison_chart_html,
+                rank=rank,
+                total_users=total_users,
+                badges=badges,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    try:
+        return render_template('health_score.html', form=form, language=language, translations=translations.get(language, translations['English']))
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/net_worth', methods=['GET', 'POST'])
 def net_worth_form():
@@ -1181,18 +1193,28 @@ def net_worth_form():
             'language': form.language.data
         })
         chart_html, comparison_chart_html = generate_net_worth_charts(form.assets.data, form.liabilities.data, net_worth, language)
-        return render_template(
-            'net_worth_result.html',
-            net_worth=net_worth,
-            rank_percentile=rank_percentile,
-            advice=advice,
-            badges=badges,
-            chart_html=chart_html,
-            comparison_chart_html=comparison_chart_html,
-            language=language,
-            translations=translations.get(language, translations['English'])
-        )
-    return render_template('net_worth.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        try:
+            return render_template(
+                'net_worth_result.html',
+                net_worth=net_worth,
+                rank_percentile=rank_percentile,
+                advice=advice,
+                badges=badges,
+                chart_html=chart_html,
+                comparison_chart_html=comparison_chart_html,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    try:
+        return render_template('net_worth.html', form=form, language=language, translations=translations.get(language, translations['English']))
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz_form():
@@ -1248,15 +1270,25 @@ def quiz_form():
                 translations=translations.get(language, translations['English'])
             )
             send_email_sync(subject, [form.email.data], html, language)
-        return render_template(
-            'quiz_result.html',
-            score=quiz_score,
-            personality=personality,
-            chart_html=chart_html,
-            language=language,
-            translations=translations.get(language, translations['English'])
-        )
-    return render_template('quiz.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        try:
+            return render_template(
+                'quiz_result.html',
+                score=quiz_score,
+                personality=personality,
+                chart_html=chart_html,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    try:
+        return render_template('quiz.html', form=form, language=language, translations=translations.get(language, translations['English']))
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/emergency_fund', methods=['GET', 'POST'])
 def emergency_fund_form():
@@ -1300,14 +1332,24 @@ def emergency_fund_form():
                 translations=translations.get(language, translations['English'])
             )
             send_email_sync(subject, [form.email.data], html, language)
-        return render_template(
-            'emergency_fund_result.html',
-            recommended_fund=recommended_fund,
-            chart_html=chart_html,
-            language=language,
-            translations=translations.get(language, translations['English'])
-        )
-    return render_template('emergency_fund.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        try:
+            return render_template(
+                'emergency_fund_result.html',
+                recommended_fund=recommended_fund,
+                chart_html=chart_html,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    try:
+        return render_template('emergency_fund.html', form=form, language=language, translations=translations.get(language, translations['English']))
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/budget', methods=['GET', 'POST'])
 def budget_form():
@@ -1318,7 +1360,7 @@ def budget_form():
         form.email.data = user_email
         form.confirm_email.data = user_email
         records = get_user_data_by_email(user_email, 'Budget')
-        form.record_id.choices = [('', get_translation('Create New Record', language))] + [
+        form.record_id.choices = [('', get_translation('Create New Record',language))] + [
             (record.get('timestamp'), f"{record.get('timestamp')} - Surplus/Deficit: ₦{record.get('surplus_deficit', 0):,.2f}")
             for record in records
         ]
@@ -1331,10 +1373,11 @@ def budget_form():
             form.transport_expenses.data +
             form.other_expenses.data
         )
-        savings = form.monthly_income.data * 0.2
+        savings = form.monthly_income.data * 0.1
         surplus_deficit = form.monthly_income.data - total_expenses - savings
         rank, total_users = calculate_budget_rank(surplus_deficit)
         badges = assign_budget_badges(surplus_deficit, language)
+        record_id = form.record_id.data or str(uuid.uuid4())
         budget_data = {
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'first_name': form.first_name.data,
@@ -1373,8 +1416,6 @@ def budget_form():
             subject = get_translation('Your Budget Plan', language)
             html = render_template(
                 'email_templates/budget_email.html',
-                total_expenses=total_expenses,
-                savings=savings,
                 surplus_deficit=surplus_deficit,
                 chart_html=chart_html,
                 rank=rank,
@@ -1384,19 +1425,27 @@ def budget_form():
                 translations=translations.get(language, translations['English'])
             )
             send_email_sync(subject, [form.email.data], html, language)
-        return render_template(
-            'budget_result.html',
-            total_expenses=total_expenses,
-            savings=savings,
-            surplus_deficit=surplus_deficit,
-            chart_html=chart_html,
-            rank=rank,
-            total_users=total_users,
-            badges=badges,
-            language=language,
-            translations=translations.get(language, translations['English'])
-        )
-    return render_template('budget.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        try:
+            return render_template(
+                'budget_result.html',
+                surplus_deficit=surplus_deficit,
+                chart_html=chart_html,
+                rank=rank,
+                total_users=total_users,
+                badges=badges,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    try:
+        return render_template('budget.html', form=form, language=language, translations=translations.get(language, translations['English']))
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/expense_tracker', methods=['GET', 'POST'])
 def expense_tracker_form():
@@ -1448,8 +1497,28 @@ def expense_tracker_form():
                 translations=translations.get(language, translations['English'])
             )
             send_email_sync(subject, [form.email.data], html, language)
+        try:
+            return render_template(
+                'expense_tracker_result.html',
+                expenses=expenses,
+                summary=summary,
+                running_balance=running_balance,
+                chart_html=chart_html,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    expenses = parse_expense_data(user_email, language) if user_email else []
+    summary = summarize_expenses(expenses, language)
+    running_balance = calculate_running_balance(user_email) if user_email else 0
+    chart_html = generate_expense_charts(user_email, language) if user_email else ""
+    try:
         return render_template(
-            'expense_tracker_result.html',
+            'expense_tracker.html',
+            form=form,
             expenses=expenses,
             summary=summary,
             running_balance=running_balance,
@@ -1457,20 +1526,10 @@ def expense_tracker_form():
             language=language,
             translations=translations.get(language, translations['English'])
         )
-    expenses = parse_expense_data(user_email, language) if user_email else []
-    summary = summarize_expenses(expenses, language)
-    running_balance = calculate_running_balance(user_email) if user_email else 0
-    chart_html = generate_expense_charts(user_email, language) if user_email else ""
-    return render_template(
-        'expense_tracker.html',
-        form=form,
-        expenses=expenses,
-        summary=summary,
-        running_balance=running_balance,
-        chart_html=chart_html,
-        language=language,
-        translations=translations.get(language, translations['English'])
-    )
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/bill_planner', methods=['GET', 'POST'])
 def bill_planner_form():
@@ -1523,8 +1582,26 @@ def bill_planner_form():
                 translations=translations.get(language, translations['English'])
             )
             send_email_sync(subject, [form.email.data], html, language)
+        try:
+            return render_template(
+                'bill_planner_result.html',
+                bills=bills,
+                schedule=schedule,
+                start_date=start_date,
+                end_date=end_date,
+                language=language,
+                translations=translations.get(language, translations['English'])
+            )
+        except TemplateNotFound as e:
+            logger.error(f"Template not found: {e}")
+            flash(get_translation('Result page not found', language), 'error')
+            return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    bills = parse_bill_data(user_email, language) if user_email else []
+    schedule = generate_bill_schedule(bills, start_date, end_date, language)
+    try:
         return render_template(
-            'bill_planner_result.html',
+            'bill_planner.html',
+            form=form,
             bills=bills,
             schedule=schedule,
             start_date=start_date,
@@ -1532,18 +1609,10 @@ def bill_planner_form():
             language=language,
             translations=translations.get(language, translations['English'])
         )
-    bills = parse_bill_data(user_email, language) if user_email else []
-    schedule = generate_bill_schedule(bills, start_date, end_date, language)
-    return render_template(
-        'bill_planner.html',
-        form=form,
-        bills=bills,
-        schedule=schedule,
-        start_date=start_date,
-        end_date=end_date,
-        language=language,
-        translations=translations.get(language, translations['English'])
-    )
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/edit/<tool>/<record_id>', methods=['GET'])
 def edit_record(tool, record_id):
@@ -1565,12 +1634,17 @@ def edit_record(tool, record_id):
         if field.name in record:
             field.data = record[field.name]
     form.record_id.data = record_id
-    return render_template(
-        f'{tool.lower()}.html',
-        form=form,
-        language=language,
-        translations=translations.get(language, translations['English'])
-    )
+    try:
+        return render_template(
+            f'{tool.lower()}.html',
+            form=form,
+            language=language,
+            translations=translations.get(language, translations['English'])
+        )
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        flash(get_translation('Page not found', language), 'error')
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
 @app.route('/delete/<tool>/<record_id>', methods=['POST'])
 def delete_record(tool, record_id):
@@ -1604,13 +1678,22 @@ def delete_record(tool, record_id):
 @app.errorhandler(404)
 def page_not_found(e):
     language = session.get('language', 'English')
-    return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
+    logger.error(f"404 error: {e}")
+    try:
+        return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        return "Page not found", 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
     language = session.get('language', 'English')
     logger.error(f"Internal server error: {e}")
-    return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    try:
+        return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
+    except TemplateNotFound as e:
+        logger.error(f"Template not found: {e}")
+        return "Internal server error", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=False)
