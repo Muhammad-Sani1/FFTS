@@ -102,6 +102,20 @@
             background: linear-gradient(135deg, #1B5E20, #01579B);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
+        .action-buttons form {
+            display: inline;
+        }
+        .action-buttons button {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0;
+        }
+        .action-buttons button:hover {
+            text-decoration: underline;
+        }
         @media (max-width: 576px) {
             .container {
                 padding: 10px;
@@ -140,12 +154,12 @@
         <div class="dashboard-card">
             <div class="summary-section">
                 <h3>{{ translations['Expense Summary'] }}</h3>
-                <p>{{ translations['Total Income'] }}: ₦{{ expense_summary.total_income | round(2) }}</p>
-                <p>{{ translations['Total Expenses'] }}: ₦{{ expense_summary.total_expenses | round(2) }}</p>
-                <p>{{ translations['Net Balance'] }}: ₦{{ expense_summary.net_balance | round(2) }}</p>
+                <p>{{ translations['Total Income'] }}: ₦{{ summary.total_income | round(2) }}</p>
+                <p>{{ translations['Total Expenses'] }}: ₦{{ summary.total_expenses | round(2) }}</p>
+                <p>{{ translations['Running Balance'] }}: ₦{{ summary.running_balance | round(2) }}</p>
                 <h4>{{ translations['By Category'] }}</h4>
                 <ul>
-                    {% for category, amount in expense_summary.by_category.items %}
+                    {% for category, amount in summary.by_category.items() %}
                         <li>{{ translations.get(category, category) }}: ₦{{ amount | round(2) }}</li>
                     {% endfor %}
                 </ul>
@@ -160,8 +174,9 @@
                             <th>{{ translations['Description'] }}</th>
                             <th>{{ translations['Category'] }}</th>
                             <th>{{ translations['Amount'] }} (₦)</th>
-                            <th>{{ translations['Type'] }}</th>
-                            <th>{{ translations['Record ID'] }}</th>
+                            <th>{{ translations['Transaction Type'] }}</th>
+                            <th>{{ translations['Running Balance'] }} (₦)</th>
+                            <th>{{ translations['Actions'] }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -172,7 +187,13 @@
                                 <td>{{ translations.get(expense.category, expense.category) }}</td>
                                 <td>{{ expense.amount | round(2) }}</td>
                                 <td>{{ translations.get(expense.transaction_type, expense.transaction_type) }}</td>
-                                <td><a href="{{ url_for('expense_tracker_form', record_id=expense.id) }}">{{ translations['Edit'] }}</a></td>
+                                <td>{{ expense.running_balance | round(2) }}</td>
+                                <td class="action-buttons">
+                                    <a href="{{ url_for('expense_tracker_form', record_id=expense.id) }}">{{ translations['Edit'] }}</a> |
+                                    <form action="{{ url_for('delete_transaction', transaction_id=expense.id) }}" method="POST" onsubmit="return confirm('{{ translations['Are you sure you want to delete this transaction?'] }}');">
+                                        <button type="submit">{{ translations['Delete'] }}</button>
+                                    </form>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
