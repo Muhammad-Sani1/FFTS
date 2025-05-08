@@ -640,7 +640,7 @@
         <footer>
         {% if request.endpoint != 'index' %}
             <a href="javascript:history.back()" class="btn btn-back" aria-label="{{ translations['Go Back'] }}">{{ translations['Back'] }}</a>
-            <a href="{{ url_for('index') }}" class="btn btn-home" aria-label="{{ translations['Return to Home'] }}">{{ translations['Home'] }}</a>
+            <a href="{{ url_for('home') }}" class="btn btn-home" aria-label="{{ translations['Return to Home'] }}">{{ translations['Home'] }}</a>
         {% endif %}
             <div class="social-links">
                 <a href="https://twitter.com/ficoreafrica" target="_blank" aria-label="Follow us on Twitter">Twitter</a>
