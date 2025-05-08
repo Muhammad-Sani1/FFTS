@@ -1056,7 +1056,7 @@ def set_language():
     session['language'] = language
     return redirect(request.referrer or url_for('home'))
 
-@app.route('/health_score', methods=['GET', 'POST'])
+@app.route('/health_score_form', methods=['GET', 'POST'])
 def health_score_form():
     language = session.get('language', 'English')
     form = HealthScoreForm()
@@ -1134,7 +1134,7 @@ def health_score_form():
             send_email_sync(subject, [form.email.data], html, language)
         try:
             return render_template(
-                'health_score_result.html',
+                'health_score_dashboard.html',
                 score=score,
                 description=get_score_description(score, language),
                 chart_html=chart_html,
@@ -1216,7 +1216,7 @@ def net_worth_form():
         flash(get_translation('Page not found', language), 'error')
         return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
-@app.route('/quiz', methods=['GET', 'POST'])
+@app.route('/quiz_form', methods=['GET', 'POST'])
 def quiz_form():
     language = session.get('language', 'English')
     form = QuizForm()
@@ -1272,7 +1272,7 @@ def quiz_form():
             send_email_sync(subject, [form.email.data], html, language)
         try:
             return render_template(
-                'quiz_result.html',
+                'quiz_dashboard.html',
                 score=quiz_score,
                 personality=personality,
                 chart_html=chart_html,
@@ -1284,13 +1284,13 @@ def quiz_form():
             flash(get_translation('Result page not found', language), 'error')
             return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
     try:
-        return render_template('quiz.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        return render_template('quiz_form.html', form=form, language=language, translations=translations.get(language, translations['English']))
     except TemplateNotFound as e:
         logger.error(f"Template not found: {e}")
         flash(get_translation('Page not found', language), 'error')
         return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
-@app.route('/emergency_fund', methods=['GET', 'POST'])
+@app.route('/emergency_fund_form', methods=['GET', 'POST'])
 def emergency_fund_form():
     language = session.get('language', 'English')
     form = EmergencyFundForm()
@@ -1334,7 +1334,7 @@ def emergency_fund_form():
             send_email_sync(subject, [form.email.data], html, language)
         try:
             return render_template(
-                'emergency_fund_result.html',
+                'emergency_fund_dashboard.html',
                 recommended_fund=recommended_fund,
                 chart_html=chart_html,
                 language=language,
@@ -1345,13 +1345,13 @@ def emergency_fund_form():
             flash(get_translation('Result page not found', language), 'error')
             return render_template('500.html', language=language, translations=translations.get(language, translations['English'])), 500
     try:
-        return render_template('emergency_fund.html', form=form, language=language, translations=translations.get(language, translations['English']))
+        return render_template('emergency_fund_form.html', form=form, language=language, translations=translations.get(language, translations['English']))
     except TemplateNotFound as e:
         logger.error(f"Template not found: {e}")
         flash(get_translation('Page not found', language), 'error')
         return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
-@app.route('/budget', methods=['GET', 'POST'])
+@app.route('/budget_form', methods=['GET', 'POST'])
 def budget_form():
     language = session.get('language', 'English')
     form = BudgetForm(language=language)
@@ -1427,7 +1427,7 @@ def budget_form():
             send_email_sync(subject, [form.email.data], html, language)
         try:
             return render_template(
-                'budget_result.html',
+                'budget_dashboard.html',
                 surplus_deficit=surplus_deficit,
                 chart_html=chart_html,
                 rank=rank,
@@ -1447,7 +1447,7 @@ def budget_form():
         flash(get_translation('Page not found', language), 'error')
         return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
-@app.route('/expense_tracker', methods=['GET', 'POST'])
+@app.route('/expense_tracker_form', methods=['GET', 'POST'])
 def expense_tracker_form():
     language = session.get('language', 'English')
     form = ExpenseTrackerForm(language=language)
@@ -1499,7 +1499,7 @@ def expense_tracker_form():
             send_email_sync(subject, [form.email.data], html, language)
         try:
             return render_template(
-                'expense_tracker_result.html',
+                'expense_tracker_dashboard.html',
                 expenses=expenses,
                 summary=summary,
                 running_balance=running_balance,
@@ -1517,7 +1517,7 @@ def expense_tracker_form():
     chart_html = generate_expense_charts(user_email, language) if user_email else ""
     try:
         return render_template(
-            'expense_tracker.html',
+            'expense_tracker_form.html',
             form=form,
             expenses=expenses,
             summary=summary,
@@ -1531,7 +1531,7 @@ def expense_tracker_form():
         flash(get_translation('Page not found', language), 'error')
         return render_template('404.html', language=language, translations=translations.get(language, translations['English'])), 404
 
-@app.route('/bill_planner', methods=['GET', 'POST'])
+@app.route('/bill_planner_form', methods=['GET', 'POST'])
 def bill_planner_form():
     language = session.get('language', 'English')
     form = BillPlannerForm()
@@ -1584,7 +1584,7 @@ def bill_planner_form():
             send_email_sync(subject, [form.email.data], html, language)
         try:
             return render_template(
-                'bill_planner_result.html',
+                'bill_planner_dashboard.html',
                 bills=bills,
                 schedule=schedule,
                 start_date=start_date,
@@ -1600,7 +1600,7 @@ def bill_planner_form():
     schedule = generate_bill_schedule(bills, start_date, end_date, language)
     try:
         return render_template(
-            'bill_planner.html',
+            'bill_planner_form.html',
             form=form,
             bills=bills,
             schedule=schedule,
