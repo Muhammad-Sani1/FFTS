@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ language }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Calculate your financial health score with Ficore Africa and get personalized insights.">
     <meta name="keywords" content="ficore africa, financial health, score calculator, Africa SME finance">
     <meta name="author" content="Ficore Africa">
-    <title>Ficore Africa - Financial Health Score</title>
+    <title>{{ translations[language]['Ficore Africa Financial Health Score'] }}</title>
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <style>
         body {
@@ -341,46 +342,46 @@
                         <div class="step active" id="step-1">
                             <h3>{{ translations[language]['Personal Information'] }}</h3>
                             <div class="mb-3">
-                                {{ form.first_name.label(class="form-label", **{'for': 'first_name'}) }}
-                                {{ form.first_name(class="form-control", placeholder=translations[language]['Enter your first name'], required=True, **{'aria-required': 'true', 'data-error': translations[language]['First Name Required']}) }}
+                                {{ form.first_name.label(class="form-label", for="first_name") }}
+                                {{ form.first_name(class="form-control", id="first_name", placeholder=translations[language]['Enter your first name'], required=True, **{'aria-required': 'true', 'data-error': translations[language]['First Name Required']}) }}
                                 <div class="valid-feedback">{{ translations[language]['Looks good!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['First Name Required'] }}</div>
                             </div>
                             <div class="mb-3">
-                                {{ form.last_name.label(class="form-label", **{'for': 'last_name'}) }}
-                                {{ form.last_name(class="form-control", placeholder=translations[language]['Enter your last name (optional)']) }}
+                                {{ form.last_name.label(class="form-label", for="last_name") }}
+                                {{ form.last_name(class="form-control", id="last_name", placeholder=translations[language]['Enter your last name (optional)']) }}
                                 <div class="valid-feedback">{{ translations[language]['Looks good!'] }}</div>
                             </div>
                             <div class="mb-3">
-                                {{ form.email.label(class="form-label", **{'for': 'email'}) }}
-                                {{ form.email(class="form-control", placeholder=translations[language]['Enter your email'], type="email", required=True, pattern="[^@]+@[^@]+\.[^@]+", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Email']}) }}
+                                {{ form.email.label(class="form-label", for="email") }}
+                                {{ form.email(class="form-control", id="email", placeholder=translations[language]['Enter your email'], type="email", required=True, pattern="[^@]+@[^@]+\.[^@]+", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Email']}) }}
                                 <div class="valid-feedback">{{ translations[language]['Looks good!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Invalid Email'] }}</div>
                             </div>
                             <div class="mb-3">
-                                {{ form.confirm_email.label(class="form-label", **{'for': 'confirm_email'}) }}
-                                {{ form.confirm_email(class="form-control", placeholder=translations[language]['Re-enter your email'], type="email", required=True, pattern="[^@]+@[^@]+\.[^@]+", **{'aria-required': 'true', 'data-error': translations[language]['Emails must match']}) }}
+                                {{ form.confirm_email.label(class="form-label", for="confirm_email") }}
+                                {{ form.confirm_email(class="form-control", id="confirm_email", placeholder=translations[language]['Re-enter your email'], type="email", required=True, pattern="[^@]+@[^@]+\.[^@]+", **{'aria-required': 'true', 'data-error': translations[language]['Emails must match']}) }}
                                 <div class="valid-feedback">{{ translations[language]['Looks good!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Emails must match'] }}</div>
                             </div>
                             <div class="mb-3 form-check">
-                                {{ form.auto_email(class="form-check-input", type="checkbox", **{'aria-label': translations[language]['Send score by email']}) }}
-                                {{ form.auto_email.label(class="form-check-label", **{'for': 'auto_email'}) }}
+                                {{ form.auto_email(class="form-check-input", id="auto_email", type="checkbox", **{'aria-label': translations[language]['Send score by email']}) }}
+                                {{ form.auto_email.label(class="form-check-label", for="auto_email") }}
                             </div>
                             <div class="mb-3">
-                                {{ form.phone_number.label(class="form-label", **{'for': 'phone_number'}) }}
-                                {{ form.phone_number(class="form-control", placeholder=translations[language]['Enter phone number (optional)'], type="tel") }}
+                                {{ form.phone_number.label(class="form-label", for="phone_number") }}
+                                {{ form.phone_number(class="form-control", id="phone_number", placeholder=translations[language]['Enter phone number (optional)'], type="tel") }}
                                 <div class="valid-feedback">{{ translations[language]['Looks good!'] }}</div>
                             </div>
                             <div class="mb-3">
                                 <p class="note-text">{{ translations[language]['Language'] }}: English or Hausa</p>
-                                {{ form.language.label(class="form-label", **{'for': 'language'}) }}
-                                {{ form.language(class="form-select", required=True, **{'aria-required': 'true'}) }}
+                                {{ form.language.label(class="form-label", for="language") }}
+                                {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true'}) }}
                                 <div class="valid-feedback">{{ translations[language]['Language selected!'] }}</div>
                             </div>
                             <div class="mb-3">
-                                {{ form.record_id.label(class="form-label", **{'for': 'record_id'}) }}
-                                {{ form.record_id(class="form-select", **{'aria-label': translations[language]['Select a previous record']}) }}
+                                {{ form.record_id.label(class="form-label", for="record_id") }}
+                                {{ form.record_id(class="form-select", id="record_id", **{'aria-label': translations[language]['Select a previous record']}) }}
                                 <div class="valid-feedback">{{ translations[language]['Record selected!'] }}</div>
                             </div>
                             <div class="text-center">
@@ -392,20 +393,20 @@
                         <div class="step" id="step-2">
                             <h3>{{ translations[language]['User Information'] }}</h3>
                             <div class="mb-3">
-                                {{ form.business_name.label(class="form-label", **{'for': 'business_name'}) }}
-                                {{ form.business_name(class="form-control", placeholder=translations[language]['Type personal name if no business'], required=True, **{'aria-required': 'true', 'data-error': translations[language]['Business Name Required']}) }}
+                                {{ form.business_name.label(class="form-label", for="business_name") }}
+                                {{ form.business_name(class="form-control", id="business_name", placeholder=translations[language]['Type personal name if no business'], required=True, **{'aria-required': 'true', 'data-error': translations[language]['Business Name Required']}) }}
                                 <div class="valid-feedback">{{ translations[language]['Looks good!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Business Name Required'] }}</div>
                             </div>
                             <div class="mb-3">
                                 <p class="note-text">{{ translations[language]['User Type'] }}: Business or Individual</p>
-                                {{ form.user_type.label(class="form-label", **{'for': 'user_type'}) }}
-                                {{ form.user_type(class="form-select", required=True, **{'aria-required': 'true'}) }}
+                                {{ form.user_type.label(class="form-label", for="user_type") }}
+                                {{ form.user_type(class="form-select", id="user_type", required=True, **{'aria-required': 'true'}) }}
                                 <div class="valid-feedback">{{ translations[language]['User Type selected!'] }}</div>
                             </div>
                             <div class="text-center">
-                                <button type="button" class="btn btn-secondary prev-step">{{ translations[language]['Previous'] | default('Previou') }}</button>
-                                <button type="button" class="btn btn-primary next-step">{{ translations[language]['Next'] | default('Next') }}</button>
+                                <button type="button" class="btn btn-secondary prev-step">{{ translations[language]['Previous'] }}</button>
+                                <button type="button" class="btn btn-primary next-step">{{ translations[language]['Next'] }}</button>
                             </div>
                         </div>
 
@@ -415,10 +416,10 @@
                             <div class="mb-3">
                                 <div class="field-container">
                                     <span class="visual-icon">💰</span>
-                                    {{ form.income_revenue.label(class="form-label", **{'for': 'income_revenue'}) }}
+                                    {{ form.monthly_income.label(class="form-label", for="monthly_income") }}
                                     <span class="info-icon" data-tooltip-target="income-tooltip" title="{{ translations[language]['Total money you receive regularly, like salary, business sales, gifts, grants, incentives, or side hustles.'] }}">ℹ️</span>
                                 </div>
-                                {{ form.income_revenue(class="form-control number-input", placeholder=translations[language]['e.g. 150,000'], type="text", required=True, pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Number']}) }}
+                                {{ form.monthly_income(class="form-control number-input", id="monthly_income", placeholder=translations[language]['e.g. 150,000'], type="text", required=True, pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Number']}) }}
                                 <div class="tooltip-fallback" id="income-tooltip"></div>
                                 <div class="valid-feedback">{{ translations[language]['Valid amount!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Invalid Number'] }}</div>
@@ -426,10 +427,10 @@
                             <div class="mb-3">
                                 <div class="field-container">
                                     <span class="visual-icon">💸</span>
-                                    {{ form.expenses_costs.label(class="form-label", **{'for': 'expenses_costs'}) }}
+                                    {{ form.monthly_expenses.label(class="form-label", for="monthly_expenses") }}
                                     <span class="info-icon" data-tooltip-target="expenses-tooltip" title="{{ translations[language]['All the money you spend, such as on rent, food, transport, electricity bill, gas and utilities, fine and penalties, levies, taxes, etc.'] }}">ℹ️</span>
                                 </div>
-                                {{ form.expenses_costs(class="form-control number-input", placeholder=translations[language]['e.g. 60,000'], type="text", required=True, pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Number']}) }}
+                                {{ form.monthly_expenses(class="form-control number-input", id="monthly_expenses", placeholder=translations[language]['e.g. 60,000'], type="text", required=True, pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Number']}) }}
                                 <div class="tooltip-fallback" id="expenses-tooltip"></div>
                                 <div class="valid-feedback">{{ translations[language]['Valid amount!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Invalid Number'] }}</div>
@@ -437,10 +438,10 @@
                             <div class="mb-3">
                                 <div class="field-container">
                                     <span class="visual-icon">🏦</span>
-                                    {{ form.debt_loan.label(class="form-label", **{'for': 'debt_loan'}) }}
+                                    {{ form.debt_loan.label(class="form-label", for="debt_loan") }}
                                     <span class="info-icon" data-tooltip-target="debt-tooltip" title="{{ translations[language]['Money you owe, like loans, IOUs, borrowings, or funds lent to you.'] }}">ℹ️</span>
                                 </div>
-                                {{ form.debt_loan(class="form-control number-input", placeholder=translations[language]['e.g. 25,000'], type="text", required=True, pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Number']}) }}
+                                {{ form.debt_loan(class="form-control number-input", id="debt_loan", placeholder=translations[language]['e.g. 25,000'], type="text", required=True, pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'true', 'data-error': translations[language]['Invalid Number']}) }}
                                 <div class="tooltip-fallback" id="debt-tooltip"></div>
                                 <div class="valid-feedback">{{ translations[language]['Valid amount!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Invalid Number'] }}</div>
@@ -448,10 +449,10 @@
                             <div class="mb-3">
                                 <div class="field-container">
                                     <span class="visual-icon">📈</span>
-                                    {{ form.debt_interest_rate.label(class="form-label", **{'for': 'debt_interest_rate'}) }}
+                                    {{ form.debt_interest_rate.label(class="form-label", for="debt_interest_rate") }}
                                     <span class="info-icon" data-tooltip-target="interest-tooltip" title="{{ translations[language]['Extra percentage you pay on a loan, usually per year or month. It’s usually something like 12% or 7%.'] }}">ℹ️</span>
                                 </div>
-                                {{ form.debt_interest_rate(class="form-control number-input", placeholder=translations[language]['e.g. 10%'], type="text", pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'false', 'data-error': translations[language]['Invalid Number']}) }}
+                                {{ form.debt_interest_rate(class="form-control number-input", id="debt_interest_rate", placeholder=translations[language]['e.g. 10%'], type="text", pattern="^[0-9,]+(\.[0-9]{1,2})?$", **{'aria-required': 'false', 'data-error': translations[language]['Invalid Number']}) }}
                                 <div class="tooltip-fallback" id="interest-tooltip"></div>
                                 <div class="valid-feedback">{{ translations[language]['Valid percentage!'] }}</div>
                                 <div class="invalid-feedback">{{ translations[language]['Invalid Number'] }}</div>
@@ -476,11 +477,10 @@
 
         <!-- Feedback Link -->
         <div class="text-center my-4">
-            <a href="{{ FEEDBACK_FORM_URL }}" class="btn btn-secondary">{{ translations[language]['Provide Feedback'] }}</a>
+            <a href="https://forms.gle/1g1FVulyf7ZvvXr7G0q7hAKwbGJMxV4blpjBuqrSjKzQ" class="btn btn-secondary">{{ translations[language]['Provide Feedback'] }}</a>
         </div>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}" onerror="console.error('Failed to load bootstrap.bundle.min.js. Please ensure the file exists in static/js/ and Flask is serving static files correctly.');"></script>
     <script>
         // Initialize Bootstrap tooltips with enhanced error handling
