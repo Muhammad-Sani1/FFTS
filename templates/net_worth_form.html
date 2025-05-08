@@ -178,13 +178,16 @@
             font-size: 0.9rem;
             display: none;
         }
-        .form-control.is-valid ~ .valid-feedback {
+        .form-control.is-valid ~ .valid-feedback,
+        .form-select.is-valid ~ .valid-feedback {
             display: block;
         }
-        .form-control.is-invalid ~ .invalid-feedback {
+        .form-control.is-invalid ~ .invalid-feedback,
+        .form-select.is-invalid ~ .invalid-feedback {
             display: block;
         }
-        .form-control.is-valid {
+        .form-control.is-valid,
+        .form-select.is-valid {
             border-color: #28a745;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -257,6 +260,13 @@
                 {{ form.hidden_tag() }}
 
                 <div class="form-group">
+                    {{ form.record_id.label(class="form-label", for="record_id") }}
+                    {{ form.record_id(class="form-select", id="record_id", **{'aria-describedby': 'record_id_help'}) }}
+                    <div class="valid-feedback">{{ translations['Record selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Please select a record or choose to create a new one.'] }}</div>
+                </div>
+
+                <div class="form-group">
                     {{ form.first_name.label(class="form-label", for="first_name") }}
                     {{ form.first_name(class="form-control", id="first_name", placeholder=translations['Enter your first name'], required=True, **{'aria-required': 'true'}) }}
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
@@ -327,7 +337,7 @@
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>
-        // Real-time validation for non-numeric inputs
+        // Real-time validation for non-numeric inputs and selects
         document.querySelectorAll('input:not([type="number"]), select').forEach(input => {
             input.addEventListener('input', () => {
                 if (input.required) {
@@ -339,13 +349,19 @@
                             input.classList.remove('is-valid');
                             input.classList.add('is-invalid');
                         }
-                    } else if (input.value) {
+                    } else if (input.tagName === 'SELECT' || input.value) {
                         input.classList.remove('is-invalid');
                         input.classList.add('is-valid');
                     } else {
                         input.classList.remove('is-valid');
                         input.classList.add('is-invalid');
                     }
+                } else if (input.tagName === 'SELECT' && input.value) {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                } else if (input.tagName === 'SELECT' && !input.value) {
+                    input.classList.remove('is-valid');
+                    input.classList.remove('is-invalid');
                 }
             });
         });
