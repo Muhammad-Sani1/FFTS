@@ -1047,9 +1047,13 @@ def home():
 @app.route('/change_language', methods=['POST'])
 def change_language():
     language = request.form.get('language', 'English')
+    if language not in ['English', 'Hausa']:
+        language = 'English'
+        flash(get_translation('Invalid language selection', session.get('language', 'English')), 'error')
     session['language'] = language
+    flash(get_translation('Language changed successfully', language), 'success')
     return redirect(request.referrer or url_for('home'))
-
+    
 @app.route('/health_score', methods=['GET', 'POST'])
 def health_score_form():
     language = session.get('language', 'English')
@@ -1384,7 +1388,7 @@ def budget_form():
             'budget_result.html',
             total_expenses=total_expenses,
             savings=savings,
-            surplus_deficit=surplus_deficit=surplus_deficit,
+            surplus_deficit=surplus_deficit,
             chart_html=chart_html,
             rank=rank,
             total_users=total_users,
