@@ -403,7 +403,81 @@ def calculate_running_balance(email):
         logger.error(f"Error calculating running balance: {e}")
         flash(get_translation('Failed to calculate running balance due to server error', language), 'error')
         return 0
+def parse_expense_data(email, language='English'):
+    """Retrieve and parse expense records for a user from Google Sheets."""
+    try:
+        sheet = initialize_worksheet('ExpenseTracker')
+        if sheet is None:
+            logger.error("Cannot parse expense data: ExpenseTracker worksheet not initialized")
+            return []
+        records = sheet.get_all_records()
+        user_records = [r for r in records if r.get('Email') == email]
+        # Convert records to a list of dictionaries with parsed values
+        parsed_records = []
+        for record in user_records:
+            parsed_record = {
+                'id': record.get('ID', ''),
+                'amount': parse_number(record.get('Amount', 0)),
+                'category': record.get('Category', 'Other'),
+                'date': record.get('Date', ''),
+                'description': record.get('Description', ''),
+                'transaction_type': record.get('TransactionType', 'Expense'),
+                'running_balance': parse_number(record.get('RunningBalance', 0))
+            }
+            parsed_records.append(parsed_record)
+        return parsed_records
+    except gspread.exceptions.APIError as e:
+        logger.error(f"Google Sheets API error parsing expense data: {e}")
+        flash(get_translation('Failed to fetch expense data due to Google Sheets API limit', language), 'error')
+        return []
+    except Exception as e:
+        logger.error(f"Error parsing expense data: {e}")
+        flash(get_translation('Failed to fetch expense data due to server error', language), 'error')
+        return []
 
+def summarize_expenses(expenses, language='English'):
+    """Summarize expenses by category and calculate totals."""
+    try:
+        summary = {
+            'total_income': 0.0,
+            'total_expenses': 0.0,
+            'net_balance': 0.0,
+            'by_category': {}
+        }
+        for expense in expenses:
+            amount = expense['amount']
+            category = expense['category']
+            transaction_type = expense['transaction_type']
+            
+            if transaction_type == 'Income':
+                summary['total_income'] += amount
+            else:
+                summary['total_expenses'] += amount
+            
+            summary['by_category'][category] = summary['by_category'].get(category, 0) + (
+                amount if transaction_type == 'Income' else -amount
+            )
+        
+        summary['net_balance'] = summary['total_income'] - summary['total_expenses']
+        # Translate category names
+        translated_summary = {
+            'total_income': summary['total_income'],
+            'total_expenses': summary['total_expenses'],
+            'net_balance': summary['net_balance'],
+            'by_category': {
+                get_translation(k, language): v for k, v in summary['by_category'].items()
+            }
+        }
+        return translated_summary
+    except Exception as e:
+        logger.error(f"Error summarizing expenses: {e}")
+        flash(get_translation('Failed to summarize expenses due to server error', language), 'error')
+        return {
+            'total_income': 0.0,
+            'total_expenses': 0.0,
+            'net_balance': 0.0,
+            'by_category': {}
+        }
 # Assign net worth rank with caching
 @cache.memoize(timeout=300)
 def assign_net_worth_rank(net_worth):
@@ -474,6 +548,33 @@ def get_quiz_advice(score, personality, language='English'):
         return get_translation('Good effort! Your {personality} style is solid, but consider tracking expenses more closely.', language).format(personality=personality.lower())
     else:
         return get_translation('Keep learning! Your {personality} approach can improve with regular financial reviews.', language).format(personality=personality.lower())
+
+def generate_budget_advice(income, housing, food, transport, other, language='English'):
+    total_expenses = housing + food + transport + other
+    surplus_deficit = income - total_expenses
+    try:
+        if surplus_deficit > 0:
+            advice = get_translation('You have a surplus of ₦{:.2f}. Consider saving or investing this amount.', language).format(surplus_deficit)
+        elif surplus_deficit == 0:
+            advice = get_translation('Your budget is balanced. Try to reduce expenses to create savings.', language)
+        else:
+            advice = get_translation('You have a deficit of ₦{:.2f}. Reduce expenses or increase income.', language).format(-surplus_deficit)
+        
+        # Add specific recommendations
+        expense_ratios = {
+            'Housing': housing / income if income > 0 else 0,
+            'Food': food / income if income > 0 else 0,
+            'Transport': transport / income if income > 0 else 0,
+            'Other': other / income if income > 0 else 0
+        }
+        if expense_ratios['Housing'] > 0.4:
+            advice += ' ' + get_translation('Housing expenses are high (>40% of income). Consider more affordable options.', language)
+        if expense_ratios['Food'] > 0.3:
+            advice += ' ' + get_translation('Food expenses are high (>30% of income). Look for cost-saving meal plans.', language)
+        return advice
+    except Exception as e:
+        logger.error(f"Error generating budget advice: {e}")
+        return get_translation('Unable to generate budget advice.', language)
         
 # Assign quiz badges
 def assign_quiz_badges(score, language='English'):
@@ -710,6 +811,39 @@ def generate_quiz_charts(quiz_score, language='English'):
         return chart_html
     except Exception as e:
         logger.error(f"Error generating quiz charts: {e}")
+        flash(get_translation('Failed to generate charts due to server error', language), 'error')
+        return get_translation('Chart failed to load. Please try again.', language)
+
+@cache.memoize(timeout=300)
+def generate_emergency_fund_charts(monthly_expenses, recommended_fund, language='English'):
+    try:
+        translations = {
+            'English': {
+                'Monthly Expenses': 'Monthly Expenses',
+                'Recommended Fund': 'Recommended Fund',
+                'Emergency Fund': 'Emergency Fund'
+            }
+        }
+        
+        # Bar chart comparing monthly expenses and recommended fund
+        fig = go.Figure(data=[
+            go.Bar(
+                x=[translations[language]['Monthly Expenses'], translations[language]['Recommended Fund']],
+                y=[monthly_expenses, recommended_fund],
+                marker_color=['#D32F2F', '#2E7D32']
+            )
+        ])
+        fig.update_layout(
+            title=translations[language]['Emergency Fund'],
+            yaxis_title='Amount (₦)',
+            showlegend=False,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        chart_html = pio.to_html(fig, include_plotlyjs=True, full_html=False)
+        return chart_html
+    except Exception as e:
+        logger.error(f"Error generating emergency fund charts: {e}")
         flash(get_translation('Failed to generate charts due to server error', language), 'error')
         return get_translation('Chart failed to load. Please try again.', language)
 
@@ -1976,7 +2110,14 @@ def budget_form():
         income = parse_number(form.income.data)
         expenses = parse_number(form.expenses.data)
         savings_goal = parse_number(form.savings_goal.data)
-        budget_advice = generate_budget_advice(income, expenses, savings_goal, form.language.data)
+        budget_advice = generate_budget_advice(
+            parse_number(form.income.data),
+            parse_number(form.housing.data),
+            parse_number(form.food.data),
+            parse_number(form.transport.data),
+            parse_number(form.other.data),
+            form.language.data
+        )
         
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -2053,8 +2194,14 @@ def budget_dashboard():
     income = parse_number(user_data.get('Income', 0))
     expenses = parse_number(user_data.get('Expenses', 0))
     savings_goal = parse_number(user_data.get('SavingsGoal', 0))
-    budget_advice = generate_budget_advice(income, expenses, savings_goal, language)
-    
+    budget_advice = generate_budget_advice(
+    parse_number(user_data.get('MonthlyIncome', 0)),
+    parse_number(user_data.get('HousingExpenses', 0)),
+    parse_number(user_data.get('FoodExpenses', 0)),
+    parse_number(user_data.get('TransportExpenses', 0)),
+    parse_number(user_data.get('OtherExpenses', 0)),
+    language
+  )
     try:
         chart_html = generate_budget_charts(income, expenses, savings_goal, language)
     except Exception as e:
@@ -2085,95 +2232,99 @@ def expense_tracker_form():
         user_data = get_user_data_by_email(user_email, 'ExpenseTracker')
         form.record_id.choices = [('', 'Create New Record')] + [(row['Timestamp'], row['Timestamp']) for row in user_data]
     
-    if request.method == 'GET':
-        if user_email:
-            form.email.data = user_email
-            form.email.render_kw['readonly'] = True
-            form.confirm_email.data = user_email
-            form.confirm_email.render_kw['readonly'] = True
-        record_id = request.args.get('record_id')
-        if record_id:
-            user_data = get_user_data_by_email(user_email, 'ExpenseTracker')
-            record = next((row for row in user_data if row['Timestamp'] == record_id), None)
-            if record:
-                form.first_name.data = record['FirstName']
-                form.last_name.data = record['LastName']
-                form.phone_number.data = record['PhoneNumber']
-                form.language.data = record['Language']
-                form.expenses.data = record['Expenses']
-                form.auto_email.data = record['AutoEmail'].lower() == 'true'
-                form.record_id.data = record_id
+if request.method == 'GET':
+    if user_email:
+        form.email.data = user_email
+        form.email.render_kw['readonly'] = True
+    record_id = request.args.get('record_id')
+    if record_id:
+        user_data = get_user_data_by_email(user_email, 'ExpenseTracker')
+        record = next((row for row in user_data if row['Timestamp'] == record_id), None)
+        if record:
+            form.first_name.data = record['FirstName']
+            form.language.data = record['Language']
+            form.amount.data = parse_number(record['Amount'])
+            form.category.data = record['Category']
+            form.description.data = record['Description']
+            form.transaction_type.data = record['TransactionType']
+            form.auto_email.data = record['AutoEmail'].lower() == 'true'
+            form.record_id.data = record_id
     
-    if form.validate_on_submit():
-        if user_email and form.email.data != user_email:
-            flash(get_translation('Email does not match logged-in user.', form.language.data), 'danger')
-            return render_template(
-                'expense_tracker_form.html',
-                form=form,
-                translations=translations.get(form.language.data, translations['English']),
-                language=form.language.data
-            )
-        
-        session['language'] = form.language.data
-        session['user_email'] = form.email.data
-        session['session_id'] = session.get('session_id', str(uuid.uuid4()))
-        
-        auth_data = {
-            'email': form.email.data,
-            'first_name': form.first_name.data,
-            'last_name': form.last_name.data or '',
-            'phone': form.phone_number.data or '',
-            'language': form.language.data
-        }
-        store_authentication_data(auth_data)
-        
-        expenses = parse_expense_data(form.expenses.data)
-        expense_summary = summarize_expenses(expenses, form.language.data)
-        
-        user_data = {
-            'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'Expenses': form.expenses.data,
-            'AutoEmail': str(form.auto_email.data),
-            'PhoneNumber': form.phone_number.data or '',
-            'FirstName': form.first_name.data,
-            'LastName': form.last_name.data or '',
-            'Email': form.email.data,
-            'Language': form.language.data
-        }
-        
+if form.validate_on_submit():
+    if user_email and form.email.data != user_email:
+        flash(get_translation('Email does not match logged-in user.', form.language.data), 'danger')
+        return render_template(
+            'expense_tracker_form.html',
+            form=form,
+            translations=translations.get(form.language.data, translations['English']),
+            language=form.language.data
+        )
+    
+    session['language'] = form.language.data
+    session['user_email'] = form.email.data
+    session['session_id'] = session.get('session_id', str(uuid.uuid4()))
+    
+    auth_data = {
+        'email': form.email.data,
+        'first_name': form.first_name.data,
+        'language': form.language.data
+    }
+    store_authentication_data(auth_data)
+    
+    user_data = {
+        'ID': str(uuid.uuid4()),
+        'Email': form.email.data,
+        'Amount': parse_number(form.amount.data),
+        'Category': form.category.data,
+        'Date': datetime.now().strftime('%Y-%m-%d'),
+        'Description': form.description.data,
+        'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'TransactionType': form.transaction_type.data,
+        'RunningBalance': 0,  # Will be updated by calculate_running_balance
+        'FirstName': form.first_name.data,
+        'Language': form.language.data,
+        'AutoEmail': str(form.auto_email.data)
+    }
+    
+    try:
+        update_or_append_user_data(user_data, 'ExpenseTracker')
+        # Update running balance after saving the record
+        running_balance = calculate_running_balance(form.email.data)
+    except Exception as e:
+        flash(get_translation('Error saving data. Please try again.', form.language.data), 'danger')
+        return render_template(
+            'expense_tracker_form.html',
+            form=form,
+            translations=translations.get(form.language.data, translations['English']),
+            language=form.language.data
+        )
+    
+    # Fetch all expenses for summary
+    expenses = parse_expense_data(form.email.data, form.language.data)
+    expense_summary = summarize_expenses(expenses, form.language.data)
+    
+    if form.auto_email.data and app.config.get('MAIL_ENABLED', False):
         try:
-            update_or_append_user_data(user_data, 'ExpenseTracker')
-        except Exception as e:
-            flash(get_translation('Error saving data. Please try again.', form.language.data), 'danger')
-            return render_template(
-                'expense_tracker_form.html',
-                form=form,
-                translations=translations.get(form.language.data, translations['English']),
-                language=form.language.data
+            html = render_template(
+                'email_templates/expense_tracker_email.html',
+                first_name=form.first_name.data,
+                expense_summary=expense_summary,
+                translations=translations.get(form.language.data, translations['English'])
             )
-        
-        if form.auto_email.data and app.config.get('MAIL_ENABLED', False):
-            try:
-                html = render_template(
-                    'email_templates/expense_tracker_email.html',
-                    first_name=form.first_name.data,
-                    expense_summary=expense_summary,
-                    translations=translations.get(form.language.data, translations['English'])
-                )
-                send_email_async.delay(
-                    get_translation('Your Expense Summary', form.language.data),
-                    [form.email.data],
-                    html,
-                    form.language.data
-                )
-            except Exception as e:
-                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
-        
-        session['expense_timestamp'] = user_data['Timestamp']
-        session.pop('expense_data', None)
-        session.pop('first_name', None)
-        
-        return redirect(url_for('expense_tracker_dashboard'))
+            send_email_async.delay(
+                get_translation('Your Expense Summary', form.language.data),
+                [form.email.data],
+                html,
+                form.language.data
+            )
+        except Exception as e:
+            flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
+    
+    session['expense_timestamp'] = user_data['Timestamp']
+    session.pop('expense_data', None)
+    session.pop('first_name', None)
+    
+    return redirect(url_for('expense_tracker_dashboard'))
     
     return render_template(
         'expense_tracker_form.html',
@@ -2200,11 +2351,11 @@ def expense_tracker_dashboard():
         flash(get_translation('Invalid dashboard access. Data not found.', language), 'danger')
         return redirect(url_for('expense_tracker_form'))
     
-    expenses = parse_expense_data(user_data.get('Expenses', ''))
+    expenses = parse_expense_data(user_email, language)
     expense_summary = summarize_expenses(expenses, language)
     
     try:
-        chart_html = generate_expense_charts(expenses, language)
+        chart_html = generate_expense_charts(user_email, language)
     except Exception as e:
         flash(get_translation('Error generating charts. Your data is still available.', language), 'warning')
         chart_html = ''
@@ -2213,6 +2364,7 @@ def expense_tracker_dashboard():
         'expense_tracker_dashboard.html',
         tool='Expense Tracker',
         user_data=user_data,
+        expenses=expenses,  # Pass full expense list for display
         chart_html=chart_html,
         expense_summary=expense_summary,
         tips=get_tips(language),
@@ -2223,6 +2375,7 @@ def expense_tracker_dashboard():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
+    
 @app.route('/bill_planner_form', methods=['GET', 'POST'])
 def bill_planner_form():
     language = session.get('language', 'English')
