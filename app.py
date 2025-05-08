@@ -1436,8 +1436,10 @@ def health_score_dashboard():
     badges = user_data.get('badges', '').split(',') if user_data.get('badges') else []
     average_score = get_average_health_score()
     chart_html, comparison_chart_html = generate_health_score_charts(income, debt, health_score, average_score, language)
+    courses = get_courses(language)
     return render_template(
         'health_score_dashboard.html',
+        first_name=user_data.get('first_name', ''),
         health_score=health_score,
         score_description=score_description,
         rank=rank,
@@ -1445,6 +1447,7 @@ def health_score_dashboard():
         badges=badges,
         chart_html=chart_html,
         comparison_chart_html=comparison_chart_html,
+        courses=courses,
         translations=translations.get(language, translations['English']),
         language=language,
         FEEDBACK_FORM_URL='https://forms.gle/1g1FVulyf7ZvvXr7G0q7hAKwbGJMxV4blpjBuqrSjKzQ',
