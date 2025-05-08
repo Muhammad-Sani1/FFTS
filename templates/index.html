@@ -434,7 +434,7 @@
             </div>
             <div class="language-selector">
                 <span class="language-label">🌍 {{ translations['Language'] }}:</span>
-                <form method="POST" action="{{ url_for('set_language') }}">
+                <form method="POST" action="{{ url_for('change_language') }}">
                     <div class="input-group">
                         <select name="language" class="form-select" aria-label="{{ translations['Select Language'] }}">
                             <option value="English" {% if session.get('language', 'English') == 'English' %}selected{% endif %}>English</option>
