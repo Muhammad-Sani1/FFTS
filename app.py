@@ -1044,8 +1044,8 @@ def home():
     language = session.get('language', 'English')
     return render_template('index.html', language=language, translations=translations.get(language, translations['English']))
 
-@app.route('/set_language', methods=['POST'])
-def set_language():
+@app.route('/change_language', methods=['POST'])
+def change_language():
     language = request.form.get('language', 'English')
     session['language'] = language
     return redirect(request.referrer or url_for('home'))
