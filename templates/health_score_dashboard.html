@@ -6,22 +6,30 @@
     <meta name="description" content="Track your financial health with Ficore Africa. See your score, earn badges, and get smart insights.">
     <meta name="keywords" content="ficore africa, financial health, dashboard, Africa SME finance, smart insights">
     <meta name="author" content="Ficore Africa">
-    <title>Ficore Africa - {{ translations['Your Financial Health Dashboard'] }}</title>
+    <title>{{ translations['Your Financial Health Dashboard'] }}</title>
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD, #F5F7FA);
+            margin: 0;
             padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
         }
         .header {
-            background-color: #1E7F71;
+            background: #1E7F71;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .header h2 {
             color: #FFFFFF;
@@ -38,11 +46,16 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
             margin-bottom: 1.5rem;
-            padding: 1.25rem;
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
         }
         h3 {
             color: #2E7D32;
             font-weight: 600;
+            margin-bottom: 1rem;
         }
         ul {
             list-style-type: none;
@@ -50,10 +63,12 @@
         }
         li {
             margin-bottom: 10px;
+            font-size: 1rem;
         }
         li strong {
             display: inline-block;
             width: 120px;
+            color: #0288D1;
         }
         .badge {
             display: inline-block;
@@ -64,37 +79,123 @@
             margin: 5px;
             font-size: 0.9rem;
         }
-        a {
-            display: inline-block;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-        .course-link {
-            background-color: #FBC02D;
-            color: #333;
-        }
-        .feedback-link {
-            background-color: #2E7D32;
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
             color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
         }
-        .waitlist-link {
-            background-color: #0288D1;
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #1B5E20, #01579B);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #1DA1F2, #0d47a1);
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
             color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
         }
-        .consultancy-link {
-            background-color: #D81B60;
+        .btn-secondary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-feedback {
+            background: #2E7D32;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
             color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
         }
-        .share-button {
+        .btn-feedback:hover {
+            transform: scale(1.05);
+            background: #1B5E20;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-waitlist {
+            background: #0288D1;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
+        }
+        .btn-waitlist:hover {
+            transform: scale(1.05);
+            background: #01579B;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-consultancy {
+            background: #D81B60;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
+        }
+        .btn-consultancy:hover {
+            transform: scale(1.05);
+            background: #AD1457;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .btn-share {
             background: linear-gradient(135deg, #FF5722, #D81B60);
             border: none;
-            padding: 10px 20px;
-            font-weight: 500;
+            padding: 12px 24px;
+            font-weight: 600;
             border-radius: 8px;
+            font-size: 1rem;
             color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
+        }
+        .btn-share:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .chart-container {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .alert {
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            .card {
+                padding: 1rem;
+            }
+            .btn-primary, .btn-secondary, .btn-feedback, .btn-waitlist, .btn-consultancy, .btn-share {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+            li strong {
+                width: 100px;
+            }
         }
     </style>
 </head>
@@ -137,18 +238,23 @@
         </div>
 
         <div class="card">
-            <h3>{{ translations['Recommended Learning'] }}</h3>
-            <a href="{{ course_url }}" class="course-link">{{ course_title }}</a>
+            <h3>{{ translations['Your Financial Insights'] }}</h3>
+            <div class="chart-container">
+                {{ chart_html | safe }}
+            </div>
+            <div class="chart-container">
+                {{ comparison_chart_html | safe }}
+            </div>
         </div>
 
         <div class="card">
-            <h3>{{ translations['Whats Next'] }}</h3>
+            <h3>{{ translations['What\'s Next'] }}</h3>
             <p>
                 <a href="{{ url_for('index') }}" class="btn btn-primary">{{ translations['Back to Home'] }}</a>
-                <a href="{{ FEEDBACK_FORM_URL }}" class="feedback-link">{{ translations['Provide Feedback'] }}</a>
-                <a href="{{ WAITLIST_FORM_URL }}" class="waitlist-link">{{ translations['Join Waitlist'] }}</a>
-                <a href="{{ CONSULTANCY_FORM_URL }}" class="consultancy-link">{{ translations['Book Consultancy'] }}</a>
-                <button class="share-button" id="share-button">{{ translations['Share Your Results'] }}</button>
+                <a href="https://forms.gle/1g1FVulyf7ZvvXr7G0q7hAKwbGJMxV4blpjBuqrSjKzQ" class="btn btn-feedback">{{ translations['Provide Feedback'] }}</a>
+                <a href="https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo" class="btn btn-waitlist">{{ translations['Join Waitlist'] }}</a>
+                <a href="https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A" class="btn btn-consultancy">{{ translations['Book Consultancy'] }}</a>
+                <button class="btn btn-share" id="share-button">{{ translations['Share Your Results'] }}</button>
             </p>
             <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
             <p>© 2025 Ficore Africa. All rights reserved.</p>
