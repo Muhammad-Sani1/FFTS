@@ -1899,24 +1899,25 @@ def budget_dashboard():
     if not email or not timestamp:
         flash(get_translation('Please complete the budget form first', language), 'warning')
         return redirect(url_for('budget_form'))
-user_data = get_record_by_id(timestamp, 'Budget')
-if not user_data:
-    flash(get_translation('No budget data found', language), 'error')
-    return redirect(url_for('budget_form'))
-monthly_income = parse_number(user_data.get('monthly_income', 0))
-housing_expenses = parse_number(user_data.get('housing_expenses', 0))
-food_expenses = parse_number(user_data.get('food_expenses', 0))
-transport_expenses = parse_number(user_data.get('transport_expenses', 0))
-other_expenses = parse_number(user_data.get('other_expenses', 0))
-total_expenses = parse_number(user_data.get('total_expenses', 0))
-savings = parse_number(user_data.get('savings', 0))
-surplus_deficit = parse_number(user_data.get('surplus_deficit', 0))
-rank = parse_number(user_data.get('rank', 1))
-total_users = parse_number(user_data.get('total_users', 1))
-timestamp = user_data.get('timestamp', '')
-badges = user_data.get('badges', '').split(',') if user_data.get('badges') else []
-advice = generate_budget_advice(monthly_income, housing_expenses, food_expenses, transport_expenses, other_expenses, language)
-chart_html = generate_budget_charts(monthly_income, housing_expenses, food_expenses, transport_expenses, other_expenses, savings, language)
+    user_data = get_record_by_id(timestamp, 'Budget')
+    if not user_data:
+        flash(get_translation('No budget data found', language), 'error')
+        return redirect(url_for('budget_form'))
+    monthly_income = parse_number(user_data.get('monthly_income', 0))
+    housing_expenses = parse_number(user_data.get('housing_expenses', 0))
+    food_expenses = parse_number(user_data.get('food_expenses', 0))
+    transport_expenses = parse_number(user_data.get('transport_expenses', 0))
+    other_expenses = parse_number(user_data.get('other_expenses', 0))
+    total_expenses = parse_number(user_data.get('total_expenses', 0))
+    savings = parse_number(user_data.get('savings', 0))
+    surplus_deficit = parse_number(user_data.get('surplus_deficit', 0))
+    rank = parse_number(user_data.get('rank', 1))
+    total_users = parse_number(user_data.get('total_users', 1))
+    timestamp = user_data.get('timestamp', '')
+    badges = user_data.get('badges', '').split(',') if user_data.get('badges') else []
+    advice = generate_budget_advice(monthly_income, housing_expenses, food_expenses, transport_expenses, other_expenses, language)
+    chart_html = generate_budget_charts(monthly_income, housing_expenses, food_expenses, transport_expenses, other_expenses, savings, language)
+    
     return render_template(
         'budget_dashboard.html',
         monthly_income=monthly_income,
