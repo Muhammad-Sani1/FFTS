@@ -110,6 +110,24 @@
             transform: scale(1.05);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
+        .btn-course {
+            background: #FBC02D;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #333;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn-course:hover {
+            transform: scale(1.05);
+            background: #F9A825;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
         .btn-feedback {
             background: #2E7D32;
             border: none;
@@ -182,6 +200,11 @@
             font-weight: 500;
             margin-bottom: 1rem;
         }
+        .course-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -189,7 +212,7 @@
             .card {
                 padding: 1rem;
             }
-            .btn-primary, .btn-secondary, .btn-feedback, .btn-waitlist, .btn-consultancy, .btn-share {
+            .btn-primary, .btn-secondary, .btn-course, .btn-feedback, .btn-waitlist, .btn-consultancy, .btn-share {
                 font-size: 0.9rem;
                 padding: 10px 20px;
             }
@@ -235,6 +258,15 @@
             {% else %}
                 <p>{{ translations['No Badges Yet'] }}</p>
             {% endif %}
+        </div>
+
+        <div class="card">
+            <h3>{{ translations['Recommended Learning'] }}</h3>
+            <div class="course-list">
+                {% for course in courses %}
+                    <a href="{{ course.link }}" class="btn btn-course" target="_blank">{{ course.title }}</a>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="card">
