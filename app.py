@@ -151,42 +151,41 @@ initialize_sheets()
 WORKSHEETS = {
     'Authentication': {
         'name': 'AuthenticationSheet',
-        'headers': ['Timestamp', 'FirstName', 'Email', 'LastName', 'PhoneNumber', 'Language', 'SessionID']
+        'headers': ['timestamp', 'first_name', 'email', 'last_name', 'phone_number', 'language', 'session_id']
     },
     'HealthScore': {
         'name': 'HealthScoreSheet',
-        'headers': ['Timestamp', 'business_name', 'income_revenue', 'expenses_costs', 'debt_loan', 'debt_interest_rate', 'AutoEmail', 'phone_number', 'first_name', 'last_name', 'user_type', 'Email', 'Badges', 'Language', 'Score']
+        'headers': ['timestamp', 'business_name', 'income_revenue', 'expenses_costs', 'debt_loan', 'debt_interest_rate', 'auto_email', 'phone_number', 'first_name', 'last_name', 'user_type', 'email', 'badges', 'language', 'score']
     },
     'NetWorth': {
         'name': 'NetWorthSheet',
-        'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'Assets', 'Liabilities', 'NetWorth']
+        'headers': ['timestamp', 'first_name', 'email', 'language', 'assets', 'liabilities', 'net_worth']
     },
     'Quiz': {
-    'name': 'QuizSheet',
-    'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'QuizScore', 'Personality']
+        'name': 'QuizSheet',
+        'headers': ['timestamp', 'first_name', 'email', 'language', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'quiz_score', 'personality', 'auto_email']
     },
     'EmergencyFund': {
         'name': 'EmergencyFundSheet',
-        'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'MonthlyExpenses', 'RecommendedFund']
+        'headers': ['timestamp', 'first_name', 'email', 'language', 'monthly_expenses', 'recommended_fund', 'auto_email']
     },
     'Budget': {
         'name': 'BudgetSheet',
-        'headers': ['Timestamp', 'FirstName', 'Email', 'AutoEmail', 'Language', 'MonthlyIncome', 'HousingExpenses', 'FoodExpenses', 'TransportExpenses', 'OtherExpenses', 'TotalExpenses', 'Savings', 'SurplusDeficit', 'Rank', 'TotalUsers', 'Badges']
+        'headers': ['timestamp', 'first_name', 'email', 'auto_email', 'language', 'monthly_income', 'housing_expenses', 'food_expenses', 'transport_expenses', 'other_expenses', 'total_expenses', 'savings', 'surplus_deficit', 'rank', 'total_users', 'badges']
     },
     'ExpenseTracker': {
         'name': 'ExpenseTrackerSheet',
-        'headers': ['ID', 'UserEmail', 'Amount', 'Category', 'Date', 'Description', 'Timestamp', 'TransactionType', 'RunningBalance', 'Email', 'FirstName', 'Language']
+        'headers': ['id', 'email', 'amount', 'category', 'date', 'description', 'timestamp', 'transaction_type', 'running_balance', 'first_name', 'language', 'auto_email']
     },
     'BillPlanner': {
         'name': 'BillPlannerSheet',
-        'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'Description', 'Amount', 'DueDate', 'Category', 'Recurrence', 'Status', 'SendEmail']
+        'headers': ['timestamp', 'first_name', 'email', 'language', 'description', 'amount', 'due_date', 'category', 'recurrence', 'status', 'send_email']
     },
     'BillReminders': {
         'name': 'BillRemindersSheet',
-        'headers': ['Timestamp', 'BillTimestamp', 'Email', 'ReminderDate', 'Status']
+        'headers': ['timestamp', 'bill_timestamp', 'email', 'reminder_date', 'status']
     }
 }
-
 def initialize_worksheet(tool):
     if sheets is None:
         logger.error(f"Cannot initialize worksheet {tool}: Google Sheets not initialized")
