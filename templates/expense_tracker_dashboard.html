@@ -152,32 +152,36 @@
             </div>
 
             <h3>{{ translations['Transaction History'] }}</h3>
-            <table class="transactions-table">
-                <thead>
-                    <tr>
-                        <th>{{ translations['Date'] }}</th>
-                        <th>{{ translations['Description'] }}</th>
-                        <th>{{ translations['Category'] }}</th>
-                        <th>{{ translations['Amount'] }} (₦)</th>
-                        <th>{{ translations['Type'] }}</th>
-                        <th>{{ translations['Running Balance'] }} (₦)</th>
-                        <th>{{ translations['Edit'] }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for expense in expenses %}
+            {% if expenses %}
+                <table class="transactions-table">
+                    <thead>
                         <tr>
-                            <td>{{ expense.date }}</td>
-                            <td>{{ expense.description }}</td>
-                            <td>{{ translations[expense.category] or expense.category }}</td>
-                            <td>{{ expense.amount | round(2) }}</td>
-                            <td>{{ translations[expense.transaction_type] or expense.transaction_type }}</td>
-                            <td>{{ expense.running_balance | round(2) }}</td>
-                            <td><a href="{{ url_for('expense_tracker_form', record_id=expense.id) }}">{{ translations['Edit'] }}</a></td>
+                            <th>{{ translations['Date'] }}</th>
+                            <th>{{ translations['Description'] }}</th>
+                            <th>{{ translations['Category'] }}</th>
+                            <th>{{ translations['Amount'] }} (₦)</th>
+                            <th>{{ translations['Type'] }}</th>
+                            <th>{{ translations['Running Balance'] }} (₦)</th>
+                            <th>{{ translations['Edit'] }}</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                            <tr>
+                                <td>{{ expense.date }}</td>
+                                <td>{{ expense.description }}</td>
+                                <td>{{ translations[expense.category] or expense.category }}</td>
+                                <td>{{ expense.amount | round(2) }}</td>
+                                <td>{{ translations[expense.transaction_type] or expense.transaction_type }}</td>
+                                <td>{{ expense.running_balance | round(2) }}</td>
+                                <td><a href="{{ url_for('expense_tracker_form', record_id=expense.id) }}">{{ translations['Edit'] }}</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>{{ translations['No transactions found. Add an expense to get started.'] }}</p>
+            {% endif %}
 
             {% if chart_html %}
                 <h3>{{ translations['Expense Charts'] }}</h3>
@@ -191,7 +195,7 @@
                 <a href="{{ url_for('expense_tracker_form') }}" class="btn btn-primary">{{ translations['Add New Expense'] }}</a>
             </p>
             <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
-            <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
+            <p><a href="https://forms.gle/1g1FVulyf7ZvvXr7G0q7hAKwbGJMxV4blpjBuqrSjKzQ" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
             <p>© 2025 Ficore Africa. All rights reserved.</p>
         </footer>
     </div>
