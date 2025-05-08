@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Calculate your emergency fund with Ficore Africa to protect your finances.">
-    <meta name="keywords" content="ficore africa, emergency fund calculator, financial security, Africa SME finance">
+    <meta name="description" content="Plan your emergency fund with Ficore Africa to secure your financial future.">
+    <meta name="keywords" content="ficore africa, emergency fund, financial planning, Africa SME finance">
     <meta name="author" content="Ficore Africa">
-    <title>{{ translations['Emergency Fund Calculator'] }}</title>
+    <title>{{ translations['Emergency Fund Planner'] }}</title>
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -203,11 +203,6 @@
         .number-input {
             padding-left: 10px;
         }
-        .fund-preview {
-            margin-top: 0.5rem;
-            color: #0288D1;
-            font-size: 0.9rem;
-        }
         .loading-spinner {
             display: none;
             margin-top: 1rem;
@@ -242,7 +237,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>{{ translations['Emergency Fund Calculator'] }}</h2>
+            <h2>{{ translations['Emergency Fund Planner'] }}</h2>
             <p>{{ translations['Financial growth passport for Africa'] }}</p>
         </div>
 
@@ -257,7 +252,7 @@
         {% endwith %}
 
         <div class="form-card">
-            <h3>{{ translations['Calculate Your Safety Net'] }}</h3>
+            <h3>{{ translations['Plan Your Emergency Fund'] }}</h3>
             <form method="POST" id="submission-form" action="{{ url_for('emergency_fund_form') }}">
                 {{ form.hidden_tag() }}
 
@@ -266,7 +261,7 @@
                     {{ form.first_name(class="form-control", id="first_name", placeholder=translations['Enter your first name'], required=True, **{'aria-required': 'true'}) }}
                     <span class="info-icon" aria-label="First Name Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Enter your first name to personalize your results.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Enter your first name for your report.'] }}</span>
                     </span>
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
                     <div class="invalid-feedback">{{ translations['First Name Required'] }}</div>
@@ -277,7 +272,7 @@
                     {{ form.email(class="form-control", id="email", placeholder=translations['Enter your email'], required=True, **{'aria-required': 'true'}) }}
                     <span class="info-icon" aria-label="Email Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Provide your email address to receive your results and tips.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Get your emergency fund report by email.'] }}</span>
                     </span>
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
                     <div class="invalid-feedback">{{ translations['Invalid Email'] }}</div>
@@ -288,7 +283,7 @@
                     {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true'}) }}
                     <span class="info-icon" aria-label="Language Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Choose your preferred language for the calculator.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Choose your language.'] }}</span>
                     </span>
                     <div class="valid-feedback">{{ translations['Language selected!'] }}</div>
                     <div class="invalid-feedback">{{ translations['Language required'] }}</div>
@@ -297,25 +292,33 @@
                 <div class="form-group">
                     {{ form.monthly_expenses.label(class="form-label", for="monthly_expenses") }}
                     <div style="position: relative;">
-                        {{ form.monthly_expenses(class="form-control number-input", type="number", step="0.01", min="0", id="monthly_expenses", placeholder=translations['e.g. 50,000'], required=True, **{'aria-required': 'true'}) }}
+                        {{ form.monthly_expenses(class="form-control number-input", type="number", step="0.01", min="0", id="monthly_expenses", placeholder=translations['e.g. ₦50,000'], required=True, **{'aria-required': 'true'}) }}
                         <span class="number-display" data-for="monthly_expenses"></span>
                         <span class="info-icon" aria-label="Monthly Expenses Info">
                             <i class="fas fa-info-circle"></i>
-                            <span class="tooltip-text">{{ translations['Enter the total amount you spend monthly on essentials like food, rent, transport, etc.'] }}</span>
+                            <span class="tooltip-text">{{ translations['Your total monthly spending (e.g., rent, food, transport).'] }}</span>
                         </span>
                     </div>
                     <div class="valid-feedback">{{ translations['Valid amount!'] }}</div>
                     <div class="invalid-feedback">{{ translations['Invalid Number'] }}</div>
-                    <p id="fund-preview" class="fund-preview" style="display: none;">
-                        {{ translations['Your safety net: ₦'] }}<span id="fund-amount">0</span>
-                    </p>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form.auto_email(class="form-check-input", id="auto_email") }}
+                        {{ form.auto_email.label(class="form-check-label", for="auto_email") }}
+                        <span class="info-icon" aria-label="Auto Email Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Get your emergency fund report by email.'] }}</span>
+                        </span>
+                    </div>
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['Calculate Your Recommended Fund Size'] }}</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['Plan Your Emergency Fund!'] }}</button>
                 </div>
                 <div class="loading-spinner">
-                    <i class="fas fa-spinner"></i> {{ translations['Calculating your fund...'] }}
+                    <i class="fas fa-spinner"></i> {{ translations['Planning your emergency fund...'] }}
                 </div>
             </form>
         </div>
@@ -323,10 +326,11 @@
         <footer class="mt-4 text-center">
             <p>
                 <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ translations['Home'] }}</a>
-                <a href="{{ url_for('emergency_fund_dashboard') }}" class="btn btn-secondary">{{ translations['Dashboard'] }}</a>
             </p>
             <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
             <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
+            <p><a href="{{ WAITLIST_FORM_URL }}" target="_blank">{{ translations['Join Waitlist'] }}</a></p>
+            <p><a href="{{ CONSULTANCY_FORM_URL }}" target="_blank">{{ translations['Book Consultancy'] }}</a></p>
             <p>© 2025 Ficore Africa. All rights reserved.</p>
         </footer>
     </div>
@@ -358,18 +362,16 @@
 
         // Format number with commas for display
         function formatNumber(value) {
-            if (!value && value !== 0) return '';
+            if (!value && value !== 0) return '0.00';
             const parts = parseFloat(value).toFixed(2).split('.');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             return parts.join('.');
         }
 
-        // Handle numeric inputs for display formatting and fund preview
+        // Handle numeric inputs for display formatting
         document.querySelectorAll('.number-input').forEach(input => {
             const displayElement = input.parentElement.querySelector('.number-display[data-for="' + input.id + '"]');
-            const fundPreview = document.getElementById('fund-preview');
-            const fundAmount = document.getElementById('fund-amount');
-            
+
             function updateDisplay() {
                 let value = parseFloat(input.value) || 0;
                 let max = parseFloat(input.max) || Infinity;
@@ -387,23 +389,13 @@
                 } else if (input.required && !input.value) {
                     input.classList.add('is-invalid');
                     displayElement.textContent = '';
-                    fundPreview.style.display = 'none';
-                    return;
                 } else {
                     input.classList.remove('is-invalid');
                     input.classList.add('is-valid');
                 }
 
                 // Update display with formatted value
-                displayElement.textContent = formatNumber(value);
-
-                // Update fund preview (6x monthly expenses)
-                if (value > 0) {
-                    fundAmount.textContent = formatNumber(value * 6);
-                    fundPreview.style.display = 'block';
-                } else {
-                    fundPreview.style.display = 'none';
-                }
+                displayElement.textContent = '₦' + formatNumber(value);
             }
 
             // Initialize display
@@ -419,7 +411,6 @@
                 if (!input.value && !input.required) {
                     input.classList.remove('is-valid', 'is-invalid');
                     displayElement.textContent = '';
-                    fundPreview.style.display = 'none';
                     return;
                 }
                 updateDisplay();
