@@ -181,7 +181,7 @@
         .form-control.is-valid ~ .valid-feedback, .form-select.is-valid ~ .valid-feedback {
             display: block;
         }
-        .form-control.is-invalid ~ .invalid-feedback,NECESSARY .form-select.is-invalid ~ .invalid-feedback {
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
             display: block;
         }
         .form-control.is-valid, .form-select.is-valid {
@@ -257,7 +257,7 @@
 
                 <div class="form-group">
                     {{ form.email.label(class="form-label", for="email") }}
-                    {{ form.email(class="form-control", id="email", placeholder=translations['e.g. john.doe@example.com'], required=True, **{'aria-required': 'true', 'aria-label': 'Email', 'readonly': 'readonly' if session['user_email'] else None}) }}
+                    {{ form.email(class="form-control", id="email", placeholder=translations['e.g. john@example.com'], required=True, **{'aria-required': 'true', 'aria-label': 'Email', 'readonly': 'readonly' if session['user_email'] else None}) }}
                     <span class="info-icon" aria-label="Email Info">
                         <i class="fas fa-info-circle"></i>
                         <span class="tooltip-text">{{ translations['Provide your email address to receive your expense summary.'] }}</span>
@@ -277,13 +277,73 @@
                     <div class="invalid-feedback">{{ translations['Language required'] }}</div>
                 </div>
 
-                <p>{{ translations['Add or edit your expenses'] }}: <a href="{{ url_for('expense_tracker_dashboard') }}">{{ translations['Click Here'] }}</a></p>
+                <div class="form-group">
+                    {{ form.amount.label(class="form-label", for="amount") }}
+                    {{ form.amount(class="form-control", id="amount", placeholder=translations['e.g. 500'], required=True, **{'aria-required': 'true', 'aria-label': 'Amount', 'type': 'number', 'step': '0.01', 'min': '0'}) }}
+                    <span class="info-icon" aria-label="Amount Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter the amount of money for this transaction.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Amount required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label", for="description") }}
+                    {{ form.description(class="form-control", id="description", placeholder=translations['e.g. Bought groceries'], required=True, **{'aria-required': 'true', 'aria-label': 'Description', 'rows': '4'}) }}
+                    <span class="info-icon" aria-label="Description Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Describe what this transaction is for.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Description required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.category.label(class="form-label", for="category") }}
+                    {{ form.category(class="form-select", id="category", required=True, **{'aria-required': 'true', 'aria-label': 'Category'}) }}
+                    <span class="info-icon" aria-label="Category Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select the category for this transaction.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Category selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Category required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.transaction_type.label(class="form-label", for="transaction_type") }}
+                    {{ form.transaction_type(class="form-select", id="transaction_type", required=True, **{'aria-required': 'true', 'aria-label': 'Transaction Type'}) }}
+                    <span class="info-icon" aria-label="Transaction Type Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Choose if this is money coming in or going out.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Transaction type selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Transaction type required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.auto_email.label(class="form-label", for="auto_email") }}
+                    {{ form.auto_email(class="form-check-input", id="auto_email", **{'aria-label': 'Auto Email'}) }}
+                    <span class="info-icon" aria-label="Auto Email Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Check to receive an email summary of your expenses.'] }}</span>
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    {{ form.record_id.label(class="form-label", for="record_id") }}
+                    {{ form.record_id(class="form-select", id="record_id", **{'aria-label': 'Record ID'}) }}
+                    <span class="info-icon" aria-label="Record ID Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select a record to edit, if applicable.'] }}</span>
+                    </span>
+                </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['View Your Expense Summary'] }}</button>
+                    {{ form.submit(class="btn btn-primary", id="submit-btn") }}
                 </div>
                 <div class="loading-spinner">
-                    <i class="fas fa-spinner"></i> {{ translations['Loading your expense summary...'] }}
+                    <i class="fas fa-spinner"></i> {{ translations['Saving your expense...'] }}
                 </div>
             </form>
         </div>
@@ -291,18 +351,19 @@
         <footer class="mt-4 text-center">
             <p>
                 <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ translations['Home'] }}</a>
-                <a href="{{ url_for('expense_tracker_dashboard') }}" class="btn btn-secondary">{{ translations['Add/Edit Expense'] }}</a>
+                <a href="{{ url_for('expense_tracker_dashboard') }}" class="btn btn-secondary">{{ translations['View Expense Summary'] }}</a>
             </p>
-            <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
+            <p>{{ translations['Contact Us'] }} <a href="/cdn-cgi/l/email-protection#d4b2bdb7bba6b1fab5bdfab5b2a6bdb7b594b3b9b5bdb8fab7bbb9">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
             <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
             <p>© 2025 Ficore Africa. All rights reserved.</p>
         </footer>
     </div>
 
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>
-        // Real-time validation for non-numeric inputs
-        document.querySelectorAll('input:not([type="number"]), select').forEach(input => {
+        // Real-time validation for inputs
+        document.querySelectorAll('input, select, textarea').forEach(input => {
             input.addEventListener('input', () => {
                 if (input.required) {
                     if (input.type === 'email') {
@@ -313,7 +374,15 @@
                             input.classList.remove('is-valid');
                             input.classList.add('is-invalid');
                         }
-                    } else if (input.value) {
+                    } else if (input.type === 'number') {
+                        if (input.value && input.value > 0) {
+                            input.classList.remove('is-invalid');
+                            input.classList.add('is-valid');
+                        } else {
+                            input.classList.remove('is-valid');
+                            input.classList.add('is-invalid');
+                        }
+                    } else if (input.tagName === 'SELECT' || input.tagName === 'TEXTAREA' || input.value) {
                         input.classList.remove('is-invalid');
                         input.classList.add('is-valid');
                     } else {
