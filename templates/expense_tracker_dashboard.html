@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Add or edit an expense with Ficore Africa to track your spending.">
+    <meta name="description" content="View your expense dashboard with Ficore Africa to track your spending.">
     <meta name="keywords" content="ficore africa, expense tracker, financial management, Africa SME finance">
     <meta name="author" content="Ficore Africa">
-    <title>{{ translations['Add/Edit Expense'] }}</title>
+    <title>{{ translations['Expense Dashboard'] }}</title>
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,7 +20,7 @@
             box-sizing: border-box;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: auto;
         }
         .header {
@@ -41,165 +41,26 @@
             font-size: 0.9rem;
             margin: 5px 0 0 0;
         }
-        .form-card {
+        .dashboard-card {
             background: #fff;
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
-        .form-card:hover {
+        .dashboard-card:hover {
             transform: translateY(-5px);
         }
-        .form-group {
-            position: relative;
-            margin-bottom: 1.5rem;
+        .summary-section {
+            margin-bottom: 2rem;
         }
-        .form-label {
+        .summary-section h3 {
             color: #0288D1;
-            font-weight: 500;
-            margin-bottom: 5px;
-            display: block;
+            margin-bottom: 1rem;
         }
-        .form-control, .form-select, .form-check-input {
-            border: 2px solid #0288D1;
-            border-radius: 8px;
-            padding: 10px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            min-height: 48px;
+        .summary-section p {
+            margin: 0.5rem 0;
             font-size: 1rem;
-            width: 100%;
-        }
-        .form-control:focus, .form-select:focus, .form-check-input:focus {
-            border-color: #2E7D32;
-            box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
-            outline: none;
-        }
-        .form-control:invalid, .form-select:invalid {
-            border-color: #dc3545;
-            box-shadow: 0 0 8px rgba(220, 53, 69, 0.3);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #2E7D32, #0288D1);
-            border: none;
-            padding: 12px 24px;
-            font-weight: 600;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            color: white;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            min-width: 120px;
-            min-height: 48px;
-        }
-        .btn-primary:hover {
-            transform: scale(1.05);
-            background: linear-gradient(135deg, #1B5E20, #01579B);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-            border: 1px solid #4CAF50;
-        }
-        .btn-primary:active {
-            transform: scale(0.95);
-        }
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s ease, height 0.3s ease;
-        }
-        .btn-primary:hover::after {
-            width: 200px;
-            height: 200px;
-        }
-        .btn-secondary {
-            background: #6c757d;
-            border: none;
-            padding: 12px 24px;
-            font-weight: 600;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            color: white;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            min-width: 120px;
-            min-height: 48px;
-        }
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: scale(1.05);
-        }
-        .info-icon {
-            cursor: pointer;
-            color: #0288D1;
-            margin-left: 5px;
-            font-size: 0.9rem;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        .info-icon:hover {
-            color: #2E7D32;
-        }
-        .tooltip-text {
-            visibility: hidden;
-            width: 220px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -110px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .info-icon:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-        .valid-feedback {
-            color: #28a745;
-            font-size: 0.9rem;
-            display: none;
-        }
-        .invalid-feedback {
-            color: #dc3545;
-            font-size: 0.9rem;
-            display: none;
-        }
-        .form-control.is-valid ~ .valid-feedback, .form-select.is-valid ~ .valid-feedback {
-            display: block;
-        }
-        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
-            display: block;
-        }
-        .form-control.is-valid, .form-select.is-valid {
-            border-color: #28a745;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-        }
-        .loading-spinner {
-            display: none;
-            margin-top: 1rem;
-            text-align: center;
-        }
-        .loading-spinner i {
-            font-size: 1.5rem;
-            color: #2E7D32;
-            animation: spin 1s linear infinite;
         }
         .transactions-table {
             width: 100%;
@@ -224,23 +85,37 @@
         .transactions-table a:hover {
             text-decoration: underline;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32, #0288D1);
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 120px;
+            min-height: 48px;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #1B5E20, #01579B);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         }
         @media (max-width: 576px) {
             .container {
                 padding: 10px;
             }
-            .form-card {
+            .dashboard-card {
                 padding: 1rem;
             }
-            .btn-primary, .btn-secondary {
+            .btn-primary {
                 font-size: 1rem;
                 padding: 10px 20px;
             }
-            .form-control, .form-select {
+            .transactions-table th, .transactions-table td {
                 font-size: 0.9rem;
+                padding: 6px;
             }
         }
     </style>
@@ -248,7 +123,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>{{ translations['Expense Tracker'] }}</h2>
+            <h2>{{ translations['Expense Dashboard'] }}</h2>
             <p>{{ translations['Financial growth passport for Africa'] }}</p>
         </div>
 
@@ -262,139 +137,47 @@
             {% endif %}
         {% endwith %}
 
-        <div class="form-card">
-            <h3>{{ translations['Add or Update an Expense'] }}</h3>
-            <form method="POST" id="submission-form" action="{{ url_for('expense_tracker_form') }}">
-                {{ form.hidden_tag() }}
+        <div class="dashboard-card">
+            <div class="summary-section">
+                <h3>{{ translations['Expense Summary'] }}</h3>
+                <p>{{ translations['Total Income'] }}: ₦{{ expense_summary.total_income | round(2) }}</p>
+                <p>{{ translations['Total Expenses'] }}: ₦{{ expense_summary.total_expenses | round(2) }}</p>
+                <p>{{ translations['Net Balance'] }}: ₦{{ expense_summary.net_balance | round(2) }}</p>
+                <h4>{{ translations['By Category'] }}</h4>
+                <ul>
+                    {% for category, amount in expense_summary.by_category.items %}
+                        <li>{{ category }}: ₦{{ amount | round(2) }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-                <div class="form-group">
-                    {{ form.first_name.label(class="form-label", for="first_name") }}
-                    {{ form.first_name(class="form-control", id="first_name", required=True, **{'aria-required': 'true'}) }}
-                    <span class="info-icon" aria-label="First Name Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Enter your first name to personalize your results.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['First Name Required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.email.label(class="form-label", for="email") }}
-                    {{ form.email(class="form-control", id="email", required=True, **{'aria-required': 'true', 'readonly': 'readonly'}) }}
-                    <span class="info-icon" aria-label="Email Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Your email is used to track your expenses.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Invalid Email'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.language.label(class="form-label", for="language") }}
-                    {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true'}) }}
-                    <span class="info-icon" aria-label="Language Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Choose your preferred language for the tracker.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Language selected!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Language required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.description.label(class="form-label", for="description") }}
-                    {{ form.description(class="form-control", id="description", required=True, **{'aria-required': 'true'}) }}
-                    <span class="info-icon" aria-label="Description Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['What did you spend on?'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Description required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.amount.label(class="form-label", for="amount") }}
-                    {{ form.amount(class="form-control", id="amount", required=True, **{'aria-required': 'true'}) }}
-                    <span class="info-icon" aria-label="Amount Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['How much did you spend? Enter in Naira (₦).'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Amount required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.category.label(class="form-label", for="category") }}
-                    {{ form.category(class="form-select", id="category", required=True, **{'aria-required': 'true'}) }}
-                    <span class="info-icon" aria-label="Category Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Choose the type of expense.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Category selected!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Category required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.transaction_type.label(class="form-label", for="transaction_type") }}
-                    {{ form.transaction_type(class="form-select", id="transaction_type", required=True, **{'aria-required': 'true'}) }}
-                    <span class="info-icon" aria-label="Transaction Type Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Is this money you spent or received?'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Transaction type selected!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Transaction type required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.auto_email.label(class="form-label", for="auto_email") }}
-                    {{ form.auto_email(class="form-check-input", id="auto_email") }}
-                    <span class="info-icon" aria-label="Auto Email Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Check to receive an email summary of this transaction.'] }}</span>
-                    </span>
-                </div>
-
-                <div class="form-group">
-                    {{ form.record_id.label(class="form-label", for="record_id") }}
-                    {{ form.record_id(class="form-select", id="record_id") }}
-                    <span class="info-icon" aria-label="Record ID Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Select a transaction to edit or create a new one.'] }}</span>
-                    </span>
-                </div>
-
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['Save Expense'] }}</button>
-                </div>
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner"></i> {{ translations['Saving your expense...'] }}
-                </div>
-            </form>
-
-            {% if transactions %}
-                <h3>{{ translations['Your Transactions'] }}</h3>
-                <table class="transactions-table">
-                    <thead>
+            <h3>{{ translations['Transaction History'] }}</h3>
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>{{ translations['Date'] }}</th>
+                        <th>{{ translations['Description'] }}</th>
+                        <th>{{ translations['Category'] }}</th>
+                        <th>{{ translations['Amount'] }} (₦)</th>
+                        <th>{{ translations['Type'] }}</th>
+                        <th>{{ translations['Running Balance'] }} (₦)</th>
+                        <th>{{ translations['Edit'] }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
                         <tr>
-                            <th>{{ translations['Description'] }}</th>
-                            <th>{{ translations['Amount'] }} (₦)</th>
-                            <th>{{ translations['Category'] }}</th>
-                            <th>{{ translations['Transaction Type'] }}</th>
-                            <th>{{ translations['Edit'] }}</th>
+                            <td>{{ expense.date }}</td>
+                            <td>{{ expense.description }}</td>
+                            <td>{{ translations[expense.category] or expense.category }}</td>
+                            <td>{{ expense.amount | round(2) }}</td>
+                            <td>{{ translations[expense.transaction_type] or expense.transaction_type }}</td>
+                            <td>{{ expense.running_balance | round(2) }}</td>
+                            <td><a href="{{ url_for('expense_tracker_form', record_id=expense.id) }}">{{ translations['Edit'] }}</a></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in transactions %}
-                            <tr>
-                                <td>{{ transaction.Description }}</td>
-                                <td>{{ transaction.Amount }}</td>
-                                <td>{{ transaction.Category }}</td>
-                                <td>{{ transaction.TransactionType }}</td>
-                                <td><a href="{{ url_for('expense_tracker_dashboard', record_id=transaction.ID) }}">{{ translations['Edit'] }}</a></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
 
             {% if chart_html %}
                 <h3>{{ translations['Expense Charts'] }}</h3>
@@ -404,8 +187,8 @@
 
         <footer class="mt-4 text-center">
             <p>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ translations['Home'] }}</a>
-                <a href="{{ url_for('expense_tracker_form') }}" class="btn btn-secondary">{{ translations['Back to Tracker'] }}</a>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">{{ translations['Home'] }}</a>
+                <a href="{{ url_for('expense_tracker_form') }}" class="btn btn-primary">{{ translations['Add New Expense'] }}</a>
             </p>
             <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
             <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
@@ -414,33 +197,5 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
-    <script>
-        document.querySelectorAll('input:not([type="number"]), select').forEach(input => {
-            input.addEventListener('input', () => {
-                if (input.required) {
-                    if (input.type === 'email') {
-                        if (input.value.match(/^\S+@\S+\.\S+$/)) {
-                            input.classList.remove('is-invalid');
-                            input.classList.add('is-valid');
-                        } else {
-                            input.classList.remove('is-valid');
-                            input.classList.add('is-invalid');
-                        }
-                    } else if (input.value) {
-                        input.classList.remove('is-invalid');
-                        input.classList.add('is-valid');
-                    } else {
-                        input.classList.remove('is-valid');
-                        input.classList.add('is-invalid');
-                    }
-                }
-            });
-        });
-
-        document.getElementById('submission-form').addEventListener('submit', function() {
-            document.querySelector('.loading-spinner').style.display = 'block';
-            document.getElementById('submit-btn').disabled = true;
-        });
-    </script>
 </body>
 </html>
