@@ -97,9 +97,10 @@ app.config['CELERY_BROKER_URL'] = celery_broker_url
 app.config['CELERY_RESULT_BACKEND'] = celery_result_backend
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
+# Updated Celery beat schedule configuration remove app.
 celery.conf.beat_schedule = {
     'check-bill-reminders-every-minute': {
-        'task': 'app.check_bill_reminders',
+        'task': 'check_bill_reminders',
         'schedule': crontab(minute='*'),
     },
 }
