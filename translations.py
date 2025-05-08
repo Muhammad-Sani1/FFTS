@@ -16,7 +16,6 @@ translations = {
 'First Name Required': 'First Name Required',
 'Enter your email': 'Enter your email',
 'Invalid Email': 'Invalid Email',
-'Calculate your net worth from assets and liabilities',
 'Language selected!': 'Language selected!',
 'Language required': 'Language required',
 'e.g. 500,000': 'e.g. 500,000',
