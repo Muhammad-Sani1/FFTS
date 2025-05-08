@@ -4,6 +4,7 @@ translations = {
 'Your Financial Health Summary': 'Your Financial Health Summary',
 'Financial Health Score': 'Financial Health Score',
 'Ranked': 'Ranked',
+'Plan & Budget': 'Plan & Budget',
 'Calculate your net worth from assets and liabilities': 'Calculate your net worth from assets and liabilities',
 'Net Worth Calculator': 'Net Worth Calculator',
 'Financial growth passport for Africa': 'Financial growth passport for Africa',
