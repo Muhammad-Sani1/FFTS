@@ -333,8 +333,8 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.send_email.label(class="form-label", for="send_email") }}
-                    {{ form.send_email(class="form-check-input", id="send_email", **{'aria-label': 'Send Email'}) }}
+                    {{ form.auto_email.label(class="form-label", for="auto_email") }}
+                    {{ form.auto_email(class="form-check-input", id="auto_email", **{'aria-label': 'Auto Email'}) }}
                     <span class="info-icon" aria-label="Send Email Info">
                         <i class="fas fa-info-circle"></i>
                         <span class="tooltip-text">{{ translations['Check to receive email reminders for this bill.'] }}</span>
