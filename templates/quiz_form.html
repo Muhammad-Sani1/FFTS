@@ -79,6 +79,14 @@
             border-color: #dc3545;
             box-shadow: 0 0 8px rgba(220, 53, 69, 0.3);
         }
+        .form-check-input {
+            margin-top: 0.3rem;
+            margin-right: 0.5rem;
+        }
+        .form-check-label {
+            color: #0288D1;
+            font-weight: 500;
+        }
         .btn-primary {
             background: linear-gradient(135deg, #2E7D32, #0288D1);
             border: none;
@@ -286,6 +294,17 @@
                         <div class="invalid-feedback">{{ translations['Please select an option'] }}</div>
                     </div>
                 {% endfor %}
+
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form.auto_email(class="form-check-input", id="auto_email") }}
+                        {{ form.auto_email.label(class="form-check-label", for="auto_email") }}
+                        <span class="info-icon" aria-label="Auto Email Info">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">{{ translations['Check to receive your quiz results and tips via email.'] }}</span>
+                        </span>
+                    </div>
+                </div>
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['Uncover Your Financial Style'] }}</button>
