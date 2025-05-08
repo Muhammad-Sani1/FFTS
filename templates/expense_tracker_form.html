@@ -268,6 +268,26 @@
                 </div>
 
                 <div class="form-group">
+                    {{ form.last_name.label(class="form-label", for="last_name") }}
+                    {{ form.last_name(class="form-control", id="last_name", placeholder=translations['e.g. Doe'], **{'aria-label': 'Last Name'}) }}
+                    <span class="info-icon" aria-label="Last Name Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter your last name (optional).'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.phone_number.label(class="form-label", for="phone_number") }}
+                    {{ form.phone_number(class="form-control", id="phone_number", placeholder=translations['e.g. +234123456789'], **{'aria-label': 'Phone Number', 'type': 'tel'}) }}
+                    <span class="info-icon" aria-label="Phone Number Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter your phone number (optional).'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                </div>
+
+                <div class="form-group">
                     {{ form.email.label(class="form-label", for="email") }}
                     {{ form.email(class="form-control", id="email", placeholder=translations['e.g. john@example.com'], required=True, **{'aria-required': 'true', 'aria-label': 'Email', 'readonly': 'readonly' if session['user_email'] else None}) }}
                     <span class="info-icon" aria-label="Email Info">
@@ -276,6 +296,17 @@
                     </span>
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
                     <div class="invalid-feedback">{{ translations['Invalid Email'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.confirm_email.label(class="form-label", for="confirm_email") }}
+                    {{ form.confirm_email(class="form-control", id="confirm_email", placeholder=translations['e.g. john@example.com'], required=True, **{'aria-required': 'true', 'aria-label': 'Confirm Email', 'readonly': 'readonly' if session['user_email'] else None}) }}
+                    <span class="info-icon" aria-label="Confirm Email Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Confirm your email address.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Emails must match'] }}</div>
                 </div>
 
                 <div class="form-group">
@@ -290,47 +321,14 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.amount.label(class="form-label", for="amount") }}
-                    {{ form.amount(class="form-control", id="amount", placeholder=translations['e.g. 500'], required=True, **{'aria-required': 'true', 'aria-label': 'Amount', 'type': 'number', 'step': '0.01', 'min': '0'}) }}
-                    <span class="info-icon" aria-label="Amount Info">
+                    {{ form.expenses.label(class="form-label", for="expenses") }}
+                    {{ form.expenses(class="form-control", id="expenses", placeholder=translations['e.g. 500,Food,Groceries,2023-10-01,Expense'], required=True, **{'aria-required': 'true', 'aria-label': 'Expenses'}) }}
+                    <span class="info-icon" aria-label="Expenses Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Enter the amount of money for this transaction.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Enter expenses as comma-separated values: amount,category,description,date,type.'] }}</span>
                     </span>
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Amount required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.description.label(class="form-label", for="description") }}
-                    {{ form.description(class="form-control", id="description", placeholder=translations['e.g. Bought groceries'], required=True, **{'aria-required': 'true', 'aria-label': 'Description'}) }}
-                    <span class="info-icon" aria-label="Description Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Describe what this transaction is for.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Description required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.category.label(class="form-label", for="category") }}
-                    {{ form.category(class="form-select", id="category", required=True, **{'aria-required': 'true', 'aria-label': 'Category'}) }}
-                    <span class="info-icon" aria-label="Category Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Select the category for this transaction.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Category selected!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Category required'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.transaction_type.label(class="form-label", for="transaction_type") }}
-                    {{ form.transaction_type(class="form-select", id="transaction_type", required=True, **{'aria-required': 'true', 'aria-label': 'Transaction Type'}) }}
-                    <span class="info-icon" aria-label="Transaction Type Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Choose if this is money coming in or going out.'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Transaction type selected!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Transaction type required'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Expenses required'] }}</div>
                 </div>
 
                 <div class="form-group">
@@ -346,11 +344,12 @@
 
                 <div class="form-group">
                     {{ form.record_id.label(class="form-label", for="record_id") }}
-                    {{ form.record_id(class="form-control", id="record_id", **{'aria-label': 'Record ID', 'readonly': 'readonly' if form.record_id.data else None}) }}
+                    {{ form.record_id(class="form-select", id="record_id", **{'aria-label': 'Record ID'}) }}
                     <span class="info-icon" aria-label="Record ID Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Select a record to edit, if applicable.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Select a record to edit, or create a new one.'] }}</span>
                     </span>
+                    <div class="valid-feedback">{{ translations['Record selected!'] }}</div>
                 </div>
 
                 <div class="text-center">
@@ -386,8 +385,8 @@
                             input.classList.remove('is-valid');
                             input.classList.add('is-invalid');
                         }
-                    } else if (input.type === 'number') {
-                        if (input.value && input.value > 0) {
+                    } else if (input.type === 'tel') {
+                        if (input.value.match(/^\+?\d{10,15}$/) || !input.value) {
                             input.classList.remove('is-invalid');
                             input.classList.add('is-valid');
                         } else {
