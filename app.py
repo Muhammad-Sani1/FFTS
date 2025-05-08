@@ -215,8 +215,8 @@ def initialize_worksheet(tool):
         'Quiz': QuizForm,
         'EmergencyFund': EmergencyFundForm,
         'Budget': BudgetForm,
-        'ExpenseTracker': ExpenseForm,
-        'BillPlanner': BillForm
+        'ExpenseTracker': ExpenseTrackerForm,
+        'BillPlanner': BillPlanenrForm
     }
     if tool in form_classes:
         form = form_classes[tool]()
@@ -929,7 +929,7 @@ class BudgetForm(FlaskForm):
         render_kw={'aria-label': 'Submit Budget Form'}
     )
 
-class ExpenseForm(FlaskForm):
+class ExpenseTrackerForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired()], render_kw={'placeholder': 'e.g. John', 'aria-label': 'First Name', 'data-tooltip': 'Enter your first name.'})
     email = EmailField('Email', validators=[DataRequired(), Email()], render_kw={'placeholder': 'e.g. john.doe@example.com', 'aria-label': 'Email', 'data-tooltip': 'Enter your email address.'})
     language = SelectField('Language', choices=[('English', 'English'), ('Hausa', 'Hausa')], validators=[DataRequired()], render_kw={'aria-label': 'Language', 'data-tooltip': 'Select your preferred language.'})
@@ -948,7 +948,7 @@ class ExpenseForm(FlaskForm):
     auto_email = BooleanField('Send Email Notification', default=False, render_kw={'aria-label': 'Send Email Notification', 'data-tooltip': 'Check to receive email notifications.'})
     submit = SubmitField('Add Transaction', render_kw={'aria-label': 'Submit Expense Form'})
     
-class BillForm(FlaskForm):
+class BillPlanenrForm(FlaskForm):
     def validate_due_date(self, field):
         try:
             parse(field.data)
