@@ -268,26 +268,6 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.last_name.label(class="form-label", for="last_name") }}
-                    {{ form.last_name(class="form-control", id="last_name", placeholder=translations['e.g. Doe'], **{'aria-label': 'Last Name'}) }}
-                    <span class="info-icon" aria-label="Last Name Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Enter your last name (optional).'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.phone_number.label(class="form-label", for="phone_number") }}
-                    {{ form.phone_number(class="form-control", id="phone_number", placeholder=translations['e.g. +234123456789'], **{'aria-label': 'Phone Number', 'type': 'tel'}) }}
-                    <span class="info-icon" aria-label="Phone Number Info">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Enter your phone number (optional).'] }}</span>
-                    </span>
-                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                </div>
-
-                <div class="form-group">
                     {{ form.email.label(class="form-label", for="email") }}
                     {{ form.email(class="form-control", id="email", placeholder=translations['e.g. john@example.com'], required=True, **{'aria-required': 'true', 'aria-label': 'Email', 'readonly': 'readonly' if session['user_email'] else None}) }}
                     <span class="info-icon" aria-label="Email Info">
@@ -321,14 +301,58 @@
                 </div>
 
                 <div class="form-group">
-                    {{ form.expenses.label(class="form-label", for="expenses") }}
-                    {{ form.expenses(class="form-control", id="expenses", placeholder=translations['e.g. 500,Food,Groceries,2023-10-01,Expense'], required=True, **{'aria-required': 'true', 'aria-label': 'Expenses'}) }}
-                    <span class="info-icon" aria-label="Expenses Info">
+                    {{ form.amount.label(class="form-label", for="amount") }}
+                    {{ form.amount(class="form-control", id="amount", placeholder=translations['e.g. 500'], required=True, **{'aria-required': 'true', 'aria-label': 'Amount', 'type': 'number', 'step': '0.01'}) }}
+                    <span class="info-icon" aria-label="Amount Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Enter expenses as comma-separated values: amount,category,description,date,type.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Enter the expense amount (e.g., 500).'] }}</span>
                     </span>
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
-                    <div class="invalid-feedback">{{ translations['Expenses required'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Amount required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label(class="form-label", for="description") }}
+                    {{ form.description(class="form-control", id="description", placeholder=translations['e.g. Groceries'], required=True, **{'aria-required': 'true', 'aria-label': 'Description'}) }}
+                    <span class="info-icon" aria-label="Description Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Describe the expense (e.g., Groceries).'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Description required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.category.label(class="form-label", for="category") }}
+                    {{ form.category(class="form-select", id="category", required=True, **{'aria-required': 'true', 'aria-label': 'Category'}) }}
+                    <span class="info-icon" aria-label="Category Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select the expense category.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Category selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Category required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.transaction_type.label(class="form-label", for="transaction_type") }}
+                    {{ form.transaction_type(class="form-select", id="transaction_type", required=True, **{'aria-required': 'true', 'aria-label': 'Transaction Type'}) }}
+                    <span class="info-icon" aria-label="Transaction Type Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select if this is an expense or income.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Type selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Transaction type required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.date.label(class="form-label", for="date") }}
+                    {{ form.date(class="form-control", id="date", placeholder=translations['e.g. 2023-10-01'], required=True, **{'aria-required': 'true', 'aria-label': 'Date', 'type': 'date'}) }}
+                    <span class="info-icon" aria-label="Date Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter the date of the expense (e.g., 2023-10-01).'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Date required'] }}</div>
                 </div>
 
                 <div class="form-group">
@@ -385,8 +409,16 @@
                             input.classList.remove('is-valid');
                             input.classList.add('is-invalid');
                         }
-                    } else if (input.type === 'tel') {
-                        if (input.value.match(/^\+?\d{10,15}$/) || !input.value) {
+                    } else if (input.type === 'date') {
+                        if (input.value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            input.classList.remove('is-invalid');
+                            input.classList.add('is-valid');
+                        } else {
+                            input.classList.remove('is-valid');
+                            input.classList.add('is-invalid');
+                        }
+                    } else if (input.type === 'number') {
+                        if (input.value && input.value > 0) {
                             input.classList.remove('is-invalid');
                             input.classList.add('is-valid');
                         } else {
