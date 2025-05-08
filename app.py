@@ -1292,10 +1292,11 @@ def index():
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
 
+# Updated change_language route
 @app.route('/change_language', methods=['POST'])
 def change_language():
     language = request.form.get('language', 'English')
-    if language in ['English', 'Hausa', 'Yoruba', 'Igbo']:
+    if language in ['English', 'Hausa']:
         session['language'] = language
         flash(get_translation('Language changed successfully', language), 'success')
     else:
