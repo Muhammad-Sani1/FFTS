@@ -177,7 +177,7 @@ WORKSHEETS = {
     },
     'NetWorth': {
         'name': 'NetWorthSheet',
-        'headers': ['timestamp', 'first_name', 'email', 'language', 'assets', 'liabilities', 'net_worth']
+        'headers': ['id', 'timestamp', 'first_name', 'email', 'language', 'assets', 'liabilities', 'net_worth']
     },
     'Quiz': {
         'name': 'QuizSheet',
@@ -615,7 +615,7 @@ class NetWorthForm(FlaskForm):
     liabilities = FloatField('Total Liabilities (₦)', validators=[DataRequired(), NumberRange(min=0, max=10000000000)], render_kw={'placeholder': 'e.g. ₦200,000', 'aria-label': 'Total Liabilities', 'data-tooltip': 'Enter the total value of your liabilities.'})
     record_id = SelectField('Select Record to Edit', choices=[('', 'Create New Record')], validators=[Optional()], render_kw={'aria-label': 'Select Record', 'data-tooltip': 'Select a previous record to edit or create a new one.'})
     submit = SubmitField('Get My Net Worth', render_kw={'aria-label': 'Submit Net Worth Form'})
-
+    
 class QuizForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired()], render_kw={'placeholder': 'e.g. John', 'aria-label': 'First Name', 'data-tooltip': 'Enter your first name.'})
     email = EmailField('Email', validators=[DataRequired(), Email()], render_kw={'placeholder': 'e.g. john.doe@example.com', 'aria-label': 'Email', 'data-tooltip': 'Enter your email address.'})
