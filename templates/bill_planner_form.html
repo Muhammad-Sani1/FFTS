@@ -246,7 +246,7 @@
 
                 <div class="form-group">
                     {{ form.first_name.label(class="form-label", for="first_name") }}
-                    {{ form.first_name(class="form-control", id="first_name", placeholder=translations['Enter your first name'], required=True, **{'aria-required': 'true'}) }}
+                    {{ form.first_name(class="form-control", id="first_name", placeholder=translations['e.g. John'], required=True, **{'aria-required': 'true', 'aria-label': 'First Name'}) }}
                     <span class="info-icon" aria-label="First Name Info">
                         <i class="fas fa-info-circle"></i>
                         <span class="tooltip-text">{{ translations['Enter your first name to personalize your results.'] }}</span>
@@ -257,10 +257,10 @@
 
                 <div class="form-group">
                     {{ form.email.label(class="form-label", for="email") }}
-                    {{ form.email(class="form-control", id="email", placeholder=translations['Enter your email'], required=True, **{'aria-required': 'true'}) }}
+                    {{ form.email(class="form-control", id="email", placeholder=translations['e.g. john@example.com'], required=True, **{'aria-required': 'true', 'aria-label': 'Email'}) }}
                     <span class="info-icon" aria-label="Email Info">
                         <i class="fas fa-info-circle"></i>
-                        <span class="tooltip-text">{{ translations['Provide your email address to receive your results and personalized tips.'] }}</span>
+                        <span class="tooltip-text">{{ translations['Provide your email address to receive your bill reminders.'] }}</span>
                     </span>
                     <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
                     <div class="invalid-feedback">{{ translations['Invalid Email'] }}</div>
@@ -268,7 +268,7 @@
 
                 <div class="form-group">
                     {{ form.language.label(class="form-label", for="language") }}
-                    {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true'}) }}
+                    {{ form.language(class="form-select", id="language", required=True, **{'aria-required': 'true', 'aria-label': 'Language'}) }}
                     <span class="info-icon" aria-label="Language Info">
                         <i class="fas fa-info-circle"></i>
                         <span class="tooltip-text">{{ translations['Choose your preferred language for the planner.'] }}</span>
@@ -277,13 +277,84 @@
                     <div class="invalid-feedback">{{ translations['Language required'] }}</div>
                 </div>
 
-                <p>{{ translations['Add or edit your bills'] }}: <a href="{{ url_for('bill_planner_dashboard') }}">{{ translations['Click Here'] }}</a></p>
+                <div class="form-group">
+                    {{ form.description.label(class="form-label", for="description") }}
+                    {{ form.description(class="form-control", id="description", placeholder=translations['e.g. Electricity bill'], required=True, **{'aria-required': 'true', 'aria-label': 'Description', 'rows': '4'}) }}
+                    <span class="info-icon" aria-label="Description Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Describe what this bill is for.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Description required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.amount.label(class="form-label", for="amount") }}
+                    {{ form.amount(class="form-control", id="amount", placeholder=translations['e.g. 1000'], required=True, **{'aria-required': 'true', 'aria-label': 'Amount', 'type': 'number', 'step': '0.01', 'min': '0'}) }}
+                    <span class="info-icon" aria-label="Amount Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Enter the amount of the bill.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Amount required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.due_date.label(class="form-label", for="due_date") }}
+                    {{ form.due_date(class="form-control", id="due_date", required=True, **{'aria-required': 'true', 'aria-label': 'Due Date', 'type': 'date'}) }}
+                    <span class="info-icon" aria-label="Due Date Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select the date the bill is due.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Looks good!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Due date required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.category.label(class="form-label", for="category") }}
+                    {{ form.category(class="form-select", id="category", required=True, **{'aria-required': 'true', 'aria-label': 'Category'}) }}
+                    <span class="info-icon" aria-label="Category Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select the category for this bill.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Category selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations[' Disposal required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.recurrence.label(class="form-label", for="recurrence") }}
+                    {{ form.recurrence(class="form-select", id="recurrence", required=True, **{'aria-required': 'true', 'aria-label': 'Recurrence'}) }}
+                    <span class="info-icon" aria-label="Recurrence Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Choose how often this bill repeats.'] }}</span>
+                    </span>
+                    <div class="valid-feedback">{{ translations['Recurrence selected!'] }}</div>
+                    <div class="invalid-feedback">{{ translations['Recurrence required'] }}</div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.send_email.label(class="form-label", for="send_email") }}
+                    {{ form.send_email(class="form-check-input", id="send_email", **{'aria-label': 'Send Email'}) }}
+                    <span class="info-icon" aria-label="Send Email Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Check to receive email reminders for this bill.'] }}</span>
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    {{ form.record_id.label(class="form-label", for="record_id") }}
+                    {{ form.record_id(class="form-select", id="record_id", **{'aria-label': 'Record ID'}) }}
+                    <span class="info-icon" aria-label="Record ID Info">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">{{ translations['Select a record to edit, if applicable.'] }}</span>
+                    </span>
+                </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary" id="submit-btn">{{ translations['View Your Bill Summary'] }}</button>
+                    {{ form.submit(class="btn btn-primary", id="submit-btn") }}
                 </div>
                 <div class="loading-spinner">
-                    <i class="fas fa-spinner"></i> {{ translations['Loading your bill summary...'] }}
+                    <i class="fas fa-spinner"></i> {{ translations['Saving your bill...'] }}
                 </div>
             </form>
         </div>
@@ -291,18 +362,19 @@
         <footer class="mt-4 text-center">
             <p>
                 <a href="{{ url_for('index') }}" class="btn btn-secondary">{{ translations['Home'] }}</a>
-                <a href="{{ url_for('bill_planner_dashboard') }}" class="btn btn-secondary">{{ translations['Add/Edit Bill'] }}</a>
+                <a href="{{ url_for('bill_planner_dashboard') }}" class="btn btn-secondary">{{ translations['View Bill Summary'] }}</a>
             </p>
-            <p>{{ translations['Contact Us'] }} <a href="mailto:ficore.ai.africa@gmail.com">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
+            <p>{{ translations['Contact Us'] }} <a href="/cdn-cgi/l/email-protection#2d4b444e425f48034c44034c4b5f444e4c6d4a404c4441034e4240">{{ translations['Click to Email'] }}</a> {{ translations['for support'] }}</p>
             <p><a href="{{ FEEDBACK_FORM_URL }}" target="_blank">{{ translations['Provide Feedback'] }}</a></p>
             <p>© 2025 Ficore Africa. All rights reserved.</p>
         </footer>
     </div>
 
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>
-        // Real-time validation for non-numeric inputs
-        document.querySelectorAll('input:not([type="number"]), select').forEach(input => {
+        // Real-time validation for inputs
+        document.querySelectorAll('input, select, textarea').forEach(input => {
             input.addEventListener('input', () => {
                 if (input.required) {
                     if (input.type === 'email') {
@@ -313,7 +385,15 @@
                             input.classList.remove('is-valid');
                             input.classList.add('is-invalid');
                         }
-                    } else if (input.value) {
+                    } else if (input.type === 'number' || input.type === 'date') {
+                        if (input.value) {
+                            input.classList.remove('is-invalid');
+                            input.classList.add('is-valid');
+                        } else {
+                            input.classList.remove('is-valid');
+                            input.classList.add('is-invalid');
+                        }
+                    } else if (input.tagName === 'SELECT' || input.tagName === 'TEXTAREA' || input.value) {
                         input.classList.remove('is-invalid');
                         input.classList.add('is-valid');
                     } else {
