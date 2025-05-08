@@ -207,24 +207,41 @@ def initialize_worksheet(tool):
         logger.error(f"Error setting headers for {config['name']}: {e}")
         sheet.clear()
         sheet.append_row(config['headers'])
-    # Validate form fields against headers
-    form_classes = {
-        'HealthScore': HealthScoreForm,
-        'NetWorth': NetWorthForm,
-        'Quiz': QuizForm,
-        'EmergencyFund': EmergencyFundForm,
-        'Budget': BudgetForm,
-        'ExpenseTracker': ExpenseTrackerForm,
-        'BillPlanner': BillPlanenrForm
+        
+# Validate form fields against headers
+form_classes = {
+    'HealthScore': HealthScoreForm,
+    'NetWorth': NetWorthForm,
+    'Quiz': QuizForm,
+    'EmergencyFund': EmergencyFundForm,
+    'Budget': BudgetForm,
+    'ExpenseTracker': ExpenseTrackerForm,
+    'BillPlanner': BillPlannerForm
+}
+if tool in form_classes:
+    form = form_classes[tool]()
+    form_fields = [field.name for field in form]
+    header_fields = [h.lower() for h in config['headers'] if h not in ['Timestamp', 'Badges', 'Score', 'NetWorth', 'QuizScore', 'Personality', 'RecommendedFund', 'TotalExpenses', 'Savings', 'SurplusDeficit', 'Rank', 'TotalUsers']]
+    # Define field mappings for Budget tool
+    field_mappings = {
+        'Budget': {
+            'income': 'monthly_income',
+            'housing': 'housing_expenses',
+            'food': 'food_expenses',
+            'transport': 'transport_expenses',
+            'other': 'other_expenses'
+        }
     }
-    if tool in form_classes:
-        form = form_classes[tool]()
-        form_fields = [field.name for field in form]
-        header_fields = [h.lower() for h in config['headers'] if h not in ['Timestamp', 'Badges', 'Score', 'NetWorth', 'QuizScore', 'Personality', 'RecommendedFund', 'TotalExpenses', 'Savings', 'SurplusDeficit', 'Rank', 'TotalUsers']]
-        missing_in_headers = [f for f in form_fields if f.lower() not in header_fields and f not in ['submit', 'record_id', 'auto_email', 'confirm_email', 'csrf_token']]
-        if missing_in_headers:
-            logger.warning(f"Form fields missing in {tool} worksheet headers: {missing_in_headers}")
-    return sheet
+    # Use mappings for Budget tool, otherwise use form field names directly
+    mapped_form_fields = []
+    for f in form_fields:
+        if tool in field_mappings and f in field_mappings[tool]:
+            mapped_form_fields.append(field_mappings[tool][f].lower())
+        else:
+            mapped_form_fields.append(f.lower())
+    missing_in_headers = [f for f, mapped_f in zip(form_fields, mapped_form_fields) if mapped_f not in header_fields and f not in ['submit', 'record_id', 'auto_email', 'confirm_email', 'csrf_token']]
+    if missing_in_headers:
+        logger.warning(f"Form fields missing in {tool} worksheet headers: {missing_in_headers}")
     
 # Utility function to parse numbers with comma support
 def parse_number(value):
@@ -970,7 +987,77 @@ class ExpenseTrackerForm(FlaskForm):
     record_id = SelectField('Select Record to Edit', choices=[('', 'Create New Record')], validators=[Optional()], render_kw={'aria-label': 'Select Record', 'data-tooltip': 'Select a previous record to edit or create a new one.'})
     auto_email = BooleanField('Send Email Notification', default=False, render_kw={'aria-label': 'Send Email Notification', 'data-tooltip': 'Check to receive email notifications.'})
     submit = SubmitField('Add Transaction', render_kw={'aria-label': 'Submit Expense Form'})
-    
+
+class EmergencyFundForm(FlaskForm):
+    first_name = StringField(
+        'First Name',
+        validators=[DataRequired()],
+        render_kw={
+            'placeholder': 'e.g. John',
+            'aria-label': 'First Name',
+            'data-tooltip': 'Enter your first name.'
+        }
+    )
+    email = EmailField(
+        'Email',
+        validators=[DataRequired(), Email()],
+        render_kw={
+            'placeholder': 'e.g. john.doe@example.com',
+            'aria-label': 'Email',
+            'data-tooltip': 'Enter your email address.'
+        }
+    )
+    language = SelectField(
+        'Language',
+        choices=[('English', 'English'), ('Hausa', 'Hausa')],
+        validators=[DataRequired()],
+        render_kw={
+            'aria-label': 'Language',
+            'data-tooltip': 'Select your preferred language.'
+        }
+    )
+    monthly_expenses = FloatField(
+        'Monthly Expenses (₦)',
+        validators=[DataRequired(), NumberRange(min=0, max=100000000)],
+        render_kw={
+            'placeholder': 'e.g. ₦50,000',
+            'aria-label': 'Monthly Expenses',
+            'data-tooltip': 'Enter your total monthly expenses.'
+        }
+    )
+    recommended_fund = FloatField(
+        'Recommended Emergency Fund (₦)',
+        validators=[Optional(), NumberRange(min=0, max=100000000)],
+        render_kw={
+            'placeholder': 'e.g. ₦150,000',
+            'aria-label': 'Recommended Emergency Fund',
+            'data-tooltip': 'Enter the recommended emergency fund amount (optional).'
+        }
+    )
+    auto_email = BooleanField(
+        'Send Email Notification',
+        default=False,
+        render_kw={
+            'aria-label': 'Send Email Notification',
+            'data-tooltip': 'Check to receive email notifications.'
+        }
+    )
+    record_id = SelectField(
+        'Select Record to Edit',
+        choices=[('', 'Create New Record')],
+        validators=[Optional()],
+        render_kw={
+            'aria-label': 'Select Record',
+            'data-tooltip': 'Select a previous record to edit or create a new one.'
+        }
+    )
+    submit = SubmitField(
+        'Calculate Emergency Fund',
+        render_kw={
+            'aria-label': 'Submit Emergency Fund Form'
+        }
+    )
+
 class BillPlannerForm(FlaskForm):
     def validate_due_date(self, field):
         try:
@@ -1235,8 +1322,8 @@ def health_score_form():
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
-                form.last_name.data = record['LastName']
-                form.phone_number.data = record['PhoneNumber']
+                form.last_name.data = record.get('LastName', '')
+                form.phone_number.data = record.get('PhoneNumber', '')
                 form.language.data = record['Language']
                 form.business_name.data = record['BusinessName']
                 form.user_type.data = record['UserType']
@@ -1420,20 +1507,15 @@ def net_worth_form():
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
-            form.confirm_email.data = user_email
-            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'NetWorth')
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
-                form.last_name.data = record['LastName']
-                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
                 form.assets.data = record['Assets']
                 form.liabilities.data = record['Liabilities']
-                form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
     if form.validate_on_submit():
@@ -1453,8 +1535,6 @@ def net_worth_form():
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
-            'last_name': form.last_name.data or '',
-            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
@@ -1468,10 +1548,7 @@ def net_worth_form():
             'Assets': assets,
             'Liabilities': liabilities,
             'NetWorth': net_worth,
-            'AutoEmail': str(form.auto_email.data),
-            'PhoneNumber': form.phone_number.data or '',
             'FirstName': form.first_name.data,
-            'LastName': form.last_name.data or '',
             'Email': form.email.data,
             'Language': form.language.data
         }
@@ -1486,23 +1563,6 @@ def net_worth_form():
                 translations=translations.get(form.language.data, translations['English']),
                 language=form.language.data
             )
-        
-        if form.auto_email.data and app.config.get('MAIL_ENABLED', False):
-            try:
-                html = render_template(
-                    'email_templates/net_worth_email.html',
-                    first_name=form.first_name.data,
-                    net_worth=net_worth,
-                    translations=translations.get(form.language.data, translations['English'])
-                )
-                send_email_async.delay(
-                    get_translation('Your Net Worth', form.language.data),
-                    [form.email.data],
-                    html,
-                    form.language.data
-                )
-            except Exception as e:
-                flash(get_translation('Error sending email. Your data is still saved.', form.language.data), 'warning')
         
         session['net_worth_timestamp'] = user_data['Timestamp']
         session.pop('net_worth_data', None)
