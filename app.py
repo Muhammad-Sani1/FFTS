@@ -87,16 +87,16 @@ celery.conf.beat_schedule = {
 }
 
 # Move calculate_quiz_results to module level
-def calculate_quiz_results(q1, q2, q3, q4, q5, language='English'):
-    score = sum(1 for q in [q1, q2, q3, q4, q5] if q == 'Yes')
-    if score >= 4:
+def calculate_quiz_results(answers, language='English'):
+    score = sum(1 for q in answers if q == 'Yes')
+    if score >= 8:
         personality = get_translation('Strategist', language)
-    elif score >= 2:
+    elif score >= 4:
         personality = get_translation('Planner', language)
     else:
         personality = get_translation('Learner', language)
     return score, personality
-
+    
 # Configure Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -162,8 +162,8 @@ WORKSHEETS = {
         'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'Assets', 'Liabilities', 'NetWorth']
     },
     'Quiz': {
-        'name': 'QuizSheet',
-        'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'QuizScore', 'Personality']
+    'name': 'QuizSheet',
+    'headers': ['Timestamp', 'FirstName', 'Email', 'Language', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'QuizScore', 'Personality']
     },
     'EmergencyFund': {
         'name': 'EmergencyFundSheet',
@@ -452,26 +452,26 @@ def get_courses(language='English'):
 
 # Get quiz advice
 def get_quiz_advice(score, personality, language='English'):
-    if score >= 4:
+    if score >= 8:
         return get_translation('Great job! Continue to leverage your {personality} approach to build wealth.', language).format(personality=personality.lower())
-    elif score >= 2:
+    elif score >= 4:
         return get_translation('Good effort! Your {personality} style is solid, but consider tracking expenses more closely.', language).format(personality=personality.lower())
     else:
         return get_translation('Keep learning! Your {personality} approach can improve with regular financial reviews.', language).format(personality=personality.lower())
-
+        
 # Assign quiz badges
 def assign_quiz_badges(score, language='English'):
     badges = []
     try:
-        if score >= 4:
+        if score >= 8:
             badges.append(get_translation('Financial Guru', language))
-        if score >= 2:
+        if score >= 4:
             badges.append(get_translation('Quiz Achiever', language))
         badges.append(get_translation('Quiz Participant', language))
     except Exception as e:
         logger.error(f"Error assigning quiz badges: {e}")
     return badges
-
+    
 # Get average health score with caching
 @cache.memoize(timeout=300)
 def get_average_health_score():
@@ -673,6 +673,30 @@ def generate_expense_charts(email, language='English'):
         flash(get_translation('Failed to generate charts due to server error', language), 'error')
         return get_translation('Chart failed to load. Please try again.', language)
 
+@cache.memoize(timeout=300)
+def generate_quiz_charts(quiz_score, language='English'):
+    try:
+        fig = go.Figure(data=[
+            go.Bar(
+                x=[get_translation('Your Score', language)],
+                y=[quiz_score],
+                marker_color='#2E7D32'
+            )
+        ])
+        fig.update_layout(
+            title=get_translation('Quiz Score', language),
+            yaxis_title='Score (out of 10)',
+            showlegend=False,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        chart_html = pio.to_html(fig, include_plotlyjs=True, full_html=False)
+        return chart_html
+    except Exception as e:
+        logger.error(f"Error generating quiz charts: {e}")
+        flash(get_translation('Failed to generate charts due to server error', language), 'error')
+        return get_translation('Chart failed to load. Please try again.', language)
+
 # Form definitions with enhanced UI features
 class HealthScoreForm(FlaskForm):
     first_name = StringField(
@@ -828,14 +852,26 @@ class QuizForm(FlaskForm):
     record_id = SelectField('Select Record to Edit', choices=[('', 'Create New Record')], validators=[Optional()], render_kw={'aria-label': 'Select Record', 'data-tooltip': 'Select a previous record to edit or create a new one.'})
     submit = SubmitField('Submit Quiz', render_kw={'aria-label': 'Submit Quiz Form'})
     
-class EmergencyFundForm(FlaskForm):
+class QuizForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired()], render_kw={'placeholder': 'e.g. John', 'aria-label': 'First Name', 'data-tooltip': 'Enter your first name.'})
     email = EmailField('Email', validators=[DataRequired(), Email()], render_kw={'placeholder': 'e.g. john.doe@example.com', 'aria-label': 'Email', 'data-tooltip': 'Enter your email address.'})
     language = SelectField('Language', choices=[('English', 'English'), ('Hausa', 'Hausa')], validators=[DataRequired()], render_kw={'aria-label': 'Language', 'data-tooltip': 'Select your preferred language.'})
-    monthly_expenses = FloatField('Monthly Essential Expenses (₦)', validators=[DataRequired(), NumberRange(min=0, max=10000000000)], render_kw={'placeholder': 'e.g. ₦50,000', 'aria-label': 'Monthly Essential Expenses', 'data-tooltip': 'Enter your monthly essential expenses.'})
+    
+    # Dynamically create 10 question fields
+    for i in range(1, 11):
+        locals()[f'q{i}'] = SelectField(
+            f'Question {i}',
+            choices=[('Yes', 'Yes'), ('No', 'No')],
+            validators=[DataRequired()],
+            render_kw={
+                'aria-label': f'Question {i}',
+                'data-tooltip': 'Answer with Yes or No based on your financial habits.'
+            }
+        )
+    
     auto_email = BooleanField('Send Email Notification', default=False, render_kw={'aria-label': 'Send Email Notification', 'data-tooltip': 'Check to receive email notifications.'})
     record_id = SelectField('Select Record to Edit', choices=[('', 'Create New Record')], validators=[Optional()], render_kw={'aria-label': 'Select Record', 'data-tooltip': 'Select a previous record to edit or create a new one.'})
-    submit = SubmitField('Calculate Emergency Fund', render_kw={'aria-label': 'Submit Emergency Fund Form'})
+    submit = SubmitField('Submit Quiz', render_kw={'aria-label': 'Submit Quiz Form'})
 
 class BudgetForm(FlaskForm):
     def __init__(self, language='English', *args, **kwargs):
@@ -1549,18 +1585,15 @@ def quiz_form():
         if user_email:
             form.email.data = user_email
             form.email.render_kw['readonly'] = True
-            form.confirm_email.data = user_email
-            form.confirm_email.render_kw['readonly'] = True
         record_id = request.args.get('record_id')
         if record_id:
             user_data = get_user_data_by_email(user_email, 'Quiz')
             record = next((row for row in user_data if row['Timestamp'] == record_id), None)
             if record:
                 form.first_name.data = record['FirstName']
-                form.last_name.data = record['LastName']
-                form.phone_number.data = record['PhoneNumber']
                 form.language.data = record['Language']
-                form.quiz_answers.data = record['QuizAnswers']
+                for i in range(1, 11):
+                    form[f'q{i}'].data = record.get(f'Q{i}', '')
                 form.auto_email.data = record['AutoEmail'].lower() == 'true'
                 form.record_id.data = record_id
     
@@ -1581,25 +1614,26 @@ def quiz_form():
         auth_data = {
             'email': form.email.data,
             'first_name': form.first_name.data,
-            'last_name': form.last_name.data or '',
-            'phone': form.phone_number.data or '',
             'language': form.language.data
         }
         store_authentication_data(auth_data)
         
-        quiz_score, feedback = calculate_quiz_score(form.quiz_answers.data, form.language.data)
+        # Collect answers for all 10 questions
+        answers = [form[f'q{i}'].data for i in range(1, 11)]
+        quiz_score, personality = calculate_quiz_results(answers, form.language.data)
         
         user_data = {
             'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'QuizAnswers': form.quiz_answers.data,
-            'QuizScore': quiz_score,
-            'AutoEmail': str(form.auto_email.data),
-            'PhoneNumber': form.phone_number.data or '',
             'FirstName': form.first_name.data,
-            'LastName': form.last_name.data or '',
             'Email': form.email.data,
-            'Language': form.language.data
+            'Language': form.language.data,
+            'AutoEmail': str(form.auto_email.data),
+            'QuizScore': quiz_score,
+            'Personality': personality
         }
+        # Add answers for Q1 to Q10
+        for i, answer in enumerate(answers, 1):
+            user_data[f'Q{i}'] = answer
         
         try:
             update_or_append_user_data(user_data, 'Quiz')
@@ -1618,7 +1652,7 @@ def quiz_form():
                     'email_templates/quiz_email.html',
                     first_name=form.first_name.data,
                     quiz_score=quiz_score,
-                    feedback=feedback,
+                    personality=personality,
                     translations=translations.get(form.language.data, translations['English'])
                 )
                 send_email_async.delay(
@@ -1645,7 +1679,6 @@ def quiz_form():
         WAITLIST_FORM_URL='https://forms.gle/17e0XYcp-z3hCl0I-j2JkHoKKJrp4PfgujsK8D7uqNxo',
         CONSULTANCY_FORM_URL='https://forms.gle/1TKvlT7OTvNS70YNd8DaPpswvqd9y7hKydxKr07gpK9A'
     )
-
 @app.route('/quiz_dashboard')
 def quiz_dashboard():
     language = session.get('language', 'English')
@@ -1662,7 +1695,9 @@ def quiz_dashboard():
         return redirect(url_for('quiz_form'))
     
     quiz_score = parse_number(user_data.get('QuizScore', 0))
-    feedback = get_quiz_feedback(quiz_score, language)
+    personality = user_data.get('Personality', '')
+    advice = get_quiz_advice(quiz_score, personality, language)
+    badges = assign_quiz_badges(quiz_score, language)
     
     try:
         chart_html = generate_quiz_charts(quiz_score, language)
@@ -1675,7 +1710,8 @@ def quiz_dashboard():
         tool='Financial Quiz',
         user_data=user_data,
         chart_html=chart_html,
-        feedback=feedback,
+        advice=advice,
+        badges=badges,
         tips=get_tips(language),
         courses=get_courses(language),
         translations=translations.get(language, translations['English']),
